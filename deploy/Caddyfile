@@ -1,0 +1,5 @@
+# Caddy 会自动申请 / 续期 Let's Encrypt 证书，并自动支持 WebSocket(/ws)
+tt.daiju.live {
+    encode gzip
+    reverse_proxy localhost:3000
+}

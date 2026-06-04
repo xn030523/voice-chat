@@ -1,0 +1,4 @@
+{
+  "build_command": "next build",
+  "start_command": "NODE_ENV=production node server.js"
+}

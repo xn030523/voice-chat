@@ -1,0 +1,19 @@
+[Unit]
+Description=Voice Chat (Next.js + WebSocket signaling)
+After=network.target
+
+[Service]
+Type=simple
+# 部署目录，按实际路径修改
+WorkingDirectory=/var/www/voice-chat
+Environment=NODE_ENV=production
+Environment=PORT=3000
+# node 路径用 `which node` 查到的为准
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target

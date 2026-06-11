@@ -1169,3 +1169,23 @@ body {
     margin-left: -22px;
   }
 }
+
+/* —— 军棋 —— */
+
+.junqi-wrap {
+  gap: 4px;
+}
+
+.junqi-deploy-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: none;
+  padding: 2px 0 4px;
+}
+
+.junqi-svg {
+  max-height: calc(100% - 70px);
+}

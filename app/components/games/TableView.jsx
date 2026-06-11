@@ -8,11 +8,13 @@ import ResultOverlay from './ResultOverlay';
 import GomokuBoard from './boards/GomokuBoard';
 import XiangqiBoard from './boards/XiangqiBoard';
 import DoudizhuTable from './boards/DoudizhuTable';
+import JunqiBoard from './boards/JunqiBoard';
 
 const BOARDS = {
   gomoku: GomokuBoard,
   xiangqi: XiangqiBoard,
   doudizhu: DoudizhuTable,
+  junqi: JunqiBoard,
 };
 
 export default function TableView({ games }) {

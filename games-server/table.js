@@ -233,11 +233,12 @@ export class Table {
     if (this.phase !== 'playing') return { error: { code: ERR.BAD_PHASE, msg: '对局未在进行中' } };
     const seat = this.seatOf(identity);
     if (seat === null) return { error: { code: ERR.NOT_FOUND, msg: '你不在本桌' } };
-    if (typeof version === 'number' && version !== this.version) {
+    const st = this.engine.status(this.engineState);
+    // 同时行动阶段(如军棋双方布阵,turn='any')不做 version 竞态裁决——提交各自独立校验
+    if (st.turn !== 'any' && typeof version === 'number' && version !== this.version) {
       return { error: { code: ERR.STALE_STATE, msg: '状态已更新,请以最新棋局为准' } };
     }
-    const st = this.engine.status(this.engineState);
-    // turn=null 的多人同时阶段(如军棋双方布阵)由引擎自行校验
+    // turn=null 的多人同时阶段由引擎自行校验
     if (st.turn !== null && st.turn !== seat && st.turn !== 'any') {
       return { error: { code: ERR.NOT_YOUR_TURN, msg: '还没轮到你' } };
     }

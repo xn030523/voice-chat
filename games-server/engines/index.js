@@ -2,15 +2,17 @@
 import * as gomoku from './gomoku.js';
 import * as xiangqi from './xiangqi.js';
 import * as doudizhu from './doudizhu.js';
+import * as junqi from './junqi.js';
 
 export const ENGINES = {
   gomoku,
   xiangqi,
   doudizhu,
+  junqi,
 };
 
-// 大厅展示顺序(后续里程碑逐个上架:junqi → ludo)
-export const GAMES = [gomoku.meta, xiangqi.meta, doudizhu.meta];
+// 大厅展示顺序(最后一棒:ludo)
+export const GAMES = [gomoku.meta, xiangqi.meta, doudizhu.meta, junqi.meta];
 
 export function getEngine(id) {
   return ENGINES[id] || null;

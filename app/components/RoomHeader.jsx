@@ -1,8 +1,8 @@
 'use client';
 
-import { Group, Badge, Button, ActionIcon, Tooltip } from '@mantine/core';
+import { Group, Badge, Button, ActionIcon, Tooltip, Indicator } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { MonitorUp, MonitorStop, LogOut, Mic, MicOff } from 'lucide-react';
+import { MonitorUp, MonitorStop, LogOut, Mic, MicOff, Gamepad2 } from 'lucide-react';
 
 export default function RoomHeader({
   onlineCount,
@@ -15,6 +15,9 @@ export default function RoomHeader({
   onShare,
   onStopShare,
   onLeave,
+  gamesOpen,
+  onToggleGames,
+  gamesAlert,
 }) {
   const isMobile = useMediaQuery('(max-width: 600px)', false);
 
@@ -117,6 +120,31 @@ export default function RoomHeader({
     </Button>
   );
 
+  const gamesBtn = (
+    <Indicator disabled={!gamesAlert} color="red" size={9} processing offset={3}>
+      {isMobile ? (
+        <ActionIcon
+          variant={gamesOpen ? 'filled' : 'light'}
+          size={36}
+          onClick={onToggleGames}
+          disabled={!connected && !gamesOpen}
+          aria-label="游戏"
+        >
+          <Gamepad2 size={18} />
+        </ActionIcon>
+      ) : (
+        <Button
+          variant={gamesOpen ? 'filled' : 'light'}
+          leftSection={<Gamepad2 size={16} />}
+          onClick={onToggleGames}
+          disabled={!connected && !gamesOpen}
+        >
+          游戏
+        </Button>
+      )}
+    </Indicator>
+  );
+
   return (
     <header className="room-header">
       <Group gap={10} wrap="nowrap">
@@ -137,6 +165,7 @@ export default function RoomHeader({
         </Badge>
         {micBtn}
         {shareBtn}
+        {gamesBtn}
         {leaveBtn}
       </Group>
     </header>

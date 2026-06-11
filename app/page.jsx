@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { Tabs } from '@mantine/core';
 import { useVoiceChat } from '@/lib/useVoiceChat';
+import { useGames } from '@/lib/useGames';
 import JoinScreen from './components/JoinScreen';
 import RoomHeader from './components/RoomHeader';
 import MemberList from './components/MemberList';
 import ShareStage from './components/ShareStage';
 import ChatPanel from './components/ChatPanel';
+import GamesPanel from './components/games/GamesPanel';
 
 export default function Home() {
   const {
@@ -20,6 +23,7 @@ export default function Home() {
     remoteShare,
     messages,
     muted,
+    authToken,
     join,
     leave,
     startShare,
@@ -29,6 +33,10 @@ export default function Home() {
     toggleMute,
   } = useVoiceChat();
   const [name, setName] = useState('');
+
+  // 游戏子系统(独立 WS,懒连接:首次打开面板才建立;关面板保持连接不掉座)
+  const [gamesOpen, setGamesOpen] = useState(false);
+  const [gamesArmed, setGamesArmed] = useState(false);
 
   const handleJoin = (e) => {
     e.preventDefault();
@@ -41,6 +49,13 @@ export default function Home() {
   const connecting = status === 'connecting';
   const reconnecting = status === 'reconnecting';
   const inRoom = connected || reconnecting;
+
+  const games = useGames({ enabled: gamesArmed && inRoom, authToken });
+  const toggleGames = () => {
+    setGamesArmed(true);
+    setGamesOpen((v) => !v);
+  };
+  const showGames = gamesOpen && inRoom;
 
   // 优先显示他人共享的画面，否则显示自己的预览
   const shownStream = remoteShare ? remoteShare.stream : isSharing ? localShareStream : null;
@@ -87,6 +102,9 @@ export default function Home() {
           onShare={startShare}
           onStopShare={stopShare}
           onLeave={leave}
+          gamesOpen={gamesOpen}
+          onToggleGames={toggleGames}
+          gamesAlert={games.myTurn && !gamesOpen}
         />
 
         {reconnecting && <div className="banner">网络中断，正在重连…</div>}
@@ -101,8 +119,27 @@ export default function Home() {
             />
           </aside>
 
-          <section className={`room-main${shownStream ? ' with-share' : ''}`}>
-            <ShareStage stream={shownStream} isRemote={!!remoteShare} sharerName={sharerName} />
+          <section className={`room-main${shownStream || showGames ? ' with-share' : ''}`}>
+            {shownStream && showGames ? (
+              <div className="stage-tabs">
+                <Tabs defaultValue="games" variant="pills" radius="md" keepMounted>
+                  <Tabs.List>
+                    <Tabs.Tab value="share">共享画面</Tabs.Tab>
+                    <Tabs.Tab value="games">游戏</Tabs.Tab>
+                  </Tabs.List>
+                  <Tabs.Panel value="share">
+                    <ShareStage stream={shownStream} isRemote={!!remoteShare} sharerName={sharerName} />
+                  </Tabs.Panel>
+                  <Tabs.Panel value="games">
+                    <GamesPanel games={games} />
+                  </Tabs.Panel>
+                </Tabs>
+              </div>
+            ) : showGames ? (
+              <GamesPanel games={games} />
+            ) : (
+              <ShareStage stream={shownStream} isRemote={!!remoteShare} sharerName={sharerName} />
+            )}
             <ChatPanel messages={messages} onSend={sendChat} onSendImage={sendImage} disabled={!connected} />
           </section>
         </div>

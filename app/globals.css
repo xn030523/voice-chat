@@ -593,3 +593,384 @@ body {
     font-size: 14px;
   }
 }
+
+/* ============ 游戏面板(娱乐子系统,独立于聊天) ============ */
+
+.stage-tabs {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage-tabs > div[role='tablist'] {
+  margin-bottom: 8px;
+  flex: none;
+}
+
+.stage-tabs [role='tabpanel'] {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.games-panel {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.games-status {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.games-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.games-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+
+.games-head-title,
+.games-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.games-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  background: rgba(220, 80, 80, 0.92);
+  color: #fff;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  z-index: 30;
+  pointer-events: none;
+  max-width: 86%;
+}
+
+/* —— 大厅 —— */
+
+.lobby-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.lobby-section {
+  padding: 12px 14px 4px;
+}
+
+.reclaim-banner {
+  margin: 12px 14px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(129, 140, 248, 0.45);
+  background: rgba(99, 102, 241, 0.12);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.game-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 8px;
+}
+
+.game-pick {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  font: inherit;
+  text-align: left;
+}
+
+.game-pick:hover {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.12);
+  transform: translateY(-1px);
+}
+
+.game-pick-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  flex: none;
+}
+
+.game-pick-icon.sm {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.game-pick-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.game-pick-seats {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.game-pick-plus {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0.5;
+}
+
+.lobby-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+.lobby-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.lobby-card-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lobby-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lobby-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+/* —— 牌桌 —— */
+
+.table-view {
+  position: relative;
+}
+
+.table-seats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  flex-wrap: wrap;
+  flex: none;
+}
+
+.seat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.seat-chip.turn {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 10px rgba(129, 140, 248, 0.35);
+  animation: seat-pulse 1.6s ease-in-out infinite;
+}
+
+.seat-chip.offline {
+  opacity: 0.55;
+}
+
+.seat-chip.empty {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.seat-host {
+  color: #fbbf24;
+}
+
+.seat-name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes seat-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--accent), 0 0 8px rgba(129, 140, 248, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 1px var(--accent), 0 0 14px rgba(129, 140, 248, 0.55);
+  }
+}
+
+.dissolve-bar,
+.waiting-bar,
+.abandon-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 14px;
+  flex: none;
+  flex-wrap: wrap;
+}
+
+.dissolve-bar {
+  background: rgba(220, 80, 80, 0.12);
+  border-top: 1px solid rgba(220, 80, 80, 0.3);
+  border-bottom: 1px solid rgba(220, 80, 80, 0.3);
+}
+
+.dissolve-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.abandon-banner {
+  font-size: 13px;
+  color: #fca5a5;
+}
+
+/* —— 棋盘区 —— */
+
+.board-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 8px 12px 12px;
+}
+
+.gomoku-board {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.board-svg {
+  max-width: 100%;
+  max-height: calc(100% - 26px);
+  aspect-ratio: 1;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.board-legend {
+  flex: none;
+}
+
+/* —— 结果遮罩 —— */
+
+.game-result-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 12, 22, 0.55);
+  backdrop-filter: blur(2px);
+  border-radius: 12px;
+  z-index: 20;
+}
+
+.game-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 30px;
+  background: rgba(23, 26, 40, 0.97);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.game-result-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-width: 820px) {
+  .games-panel {
+    min-height: 380px;
+  }
+
+  .stage-tabs {
+    min-height: 420px;
+  }
+
+  .seat-name {
+    max-width: 80px;
+  }
+}

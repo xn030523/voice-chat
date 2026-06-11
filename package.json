@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node server.js",
     "dev:games": "node games-server/index.js",
-    "test:games": "node --test games-server/engines/",
+    "test:games": "node --test games-server/engines/*.test.js",
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
     "build": "next build",
     "start": "cross-env NODE_ENV=production node server.js"

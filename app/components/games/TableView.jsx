@@ -6,9 +6,11 @@ import { DoorOpen, Flag, Play, Eye } from 'lucide-react';
 import SeatBar from './SeatBar';
 import ResultOverlay from './ResultOverlay';
 import GomokuBoard from './boards/GomokuBoard';
+import XiangqiBoard from './boards/XiangqiBoard';
 
 const BOARDS = {
   gomoku: GomokuBoard,
+  xiangqi: XiangqiBoard,
 };
 
 export default function TableView({ games }) {

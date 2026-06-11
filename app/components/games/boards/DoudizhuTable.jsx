@@ -13,6 +13,7 @@ import {
   suitOf,
   SUIT_SYMBOLS,
   typeLabel,
+  findPlay,
 } from '@/games-server/engines/doudizhu-cards.js';
 
 function CardFace({ id, selected, onClick, small }) {
@@ -71,6 +72,14 @@ export default function DoudizhuTable({ table, onMove }) {
     setSel(new Set());
   };
   const doBid = (score) => onMove({ type: 'bid', score });
+  const doHint = () => {
+    const suggestion = findPlay(view.hand || [], view.lastPlay && view.lastPlay.seat !== mySeat ? view.lastPlay.parsed : null);
+    if (suggestion) setSel(new Set(suggestion));
+  };
+  const hintAvailable =
+    phase === 'playing' &&
+    myTurn &&
+    !!findPlay(view.hand || [], view.lastPlay && view.lastPlay.seat !== mySeat ? view.lastPlay.parsed : null);
 
   // 其他两家(相对位:上家/下家)
   const others = [1, 2]
@@ -182,6 +191,9 @@ export default function DoudizhuTable({ table, onMove }) {
             </Button>
             <Button size="sm" variant="light" color="gray" disabled={!lm?.canPass} onClick={doPass}>
               不出
+            </Button>
+            <Button size="sm" variant="subtle" disabled={!hintAvailable} onClick={doHint}>
+              提示
             </Button>
             {sel.size > 0 && (
               <Button size="sm" variant="subtle" color="gray" onClick={() => setSel(new Set())}>

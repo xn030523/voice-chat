@@ -1206,3 +1206,36 @@ body {
   0%, 100% { opacity: 0.95; }
   50% { opacity: 0.35; }
 }
+
+/* —— 面板全屏开关 —— */
+
+.games-panel .games-expand-btn {
+  position: absolute !important;
+  top: 9px;
+  right: 10px;
+  z-index: 25;
+  opacity: 0.75;
+}
+
+.games-expand-btn:hover {
+  opacity: 1;
+}
+
+.games-head {
+  padding-right: 46px; /* 给右上角全屏按钮留位 */
+}
+
+.games-panel.expanded {
+  position: fixed;
+  inset: 10px;
+  z-index: 120;
+  background: #161a2c;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 600px) {
+  .games-panel.expanded {
+    inset: 0;
+    border-radius: 0;
+  }
+}

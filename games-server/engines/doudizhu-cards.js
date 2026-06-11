@@ -213,3 +213,74 @@ export function typeLabel(parsed) {
   };
   return names[parsed.type] || parsed.type;
 }
+
+/**
+ * 提示:从 hand 中找一手能压过 target 的最小牌(target=null 表示自由出,给最小单张)。
+ * 覆盖 单/对/三/三带一/三带二/顺子/连对/炸弹/王炸;飞机与四带二不主动提示(可手选)。
+ * 返回 cards[] 或 null(要不起)。
+ */
+export function findPlay(hand, target) {
+  const byRank = new Map();
+  for (const id of hand) {
+    const r = rankOf(id);
+    if (!byRank.has(r)) byRank.set(r, []);
+    byRank.get(r).push(id);
+  }
+  const ranksAsc = [...byRank.keys()].sort((a, b) => a - b);
+  const take = (r, n) => byRank.get(r).slice(0, n);
+
+  if (!target) {
+    // 自由出:最小 rank 的单张
+    const r = ranksAsc[0];
+    return r === undefined ? null : take(r, 1);
+  }
+
+  const tryBombs = () => {
+    for (const r of ranksAsc) {
+      if (byRank.get(r).length === 4 && (target.type !== 'bomb' || r > target.key)) return take(r, 4);
+    }
+    if (byRank.has(16) && byRank.has(17)) return [...take(16, 1), ...take(17, 1)];
+    return null;
+  };
+
+  if (target.type === 'rocket') return null;
+  if (target.type === 'bomb') return tryBombs();
+
+  const simple = { single: 1, pair: 2, trio: 3 }[target.type];
+  if (simple) {
+    for (const r of ranksAsc) {
+      if (r > target.key && byRank.get(r).length >= simple) return take(r, simple);
+    }
+    return tryBombs();
+  }
+  if (target.type === 'trio1' || target.type === 'trio2') {
+    const kick = target.type === 'trio1' ? 1 : 2;
+    for (const r of ranksAsc) {
+      if (r > target.key && byRank.get(r).length >= 3) {
+        const kicker = ranksAsc.find((k) => k !== r && byRank.get(k).length >= kick);
+        if (kicker !== undefined) return [...take(r, 3), ...take(kicker, kick)];
+      }
+    }
+    return tryBombs();
+  }
+  if (target.type === 'straight' || target.type === 'pairChain') {
+    const need = target.type === 'straight' ? 1 : 2;
+    const len = target.len;
+    for (let start = target.key - len + 2; start + len - 1 <= 14; start++) {
+      let ok = true;
+      for (let r = start; r < start + len; r++) {
+        if ((byRank.get(r) || []).length < need) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) {
+        const cards = [];
+        for (let r = start; r < start + len; r++) cards.push(...take(r, need));
+        return cards;
+      }
+    }
+    return tryBombs();
+  }
+  return tryBombs();
+}

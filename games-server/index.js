@@ -154,6 +154,14 @@ function route(conn, msg) {
         sendError(conn, ERR.ALREADY_SEATED, '你已在其他牌桌上,请先离开');
         return;
       }
+      if (seated === t) {
+        // 已在本桌(含对局中离桌后的弃局座位)→ 复座
+        t.onReconnect(conn.identity);
+        broadcastTable(t, [{ kind: 'reconnected', name: conn.name }]);
+        lobby.markDirty();
+        log(`conn#${conn.id}`, conn.identity, 'table.join', t.id, '(resume)');
+        return;
+      }
       const watching = lobby.spectatingTable(conn.identity);
       const res = t.join(conn.identity, conn.name, msg.seat, !!msg.reclaim);
       if (res.error) {

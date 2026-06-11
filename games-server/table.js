@@ -63,10 +63,12 @@ export class Table {
     return this.hostIdentity === identity;
   }
 
-  /** 本桌所有应收 table.state 的 identity(在座 + 观战;离线在座者也列出,hub 发不出去自然跳过) */
+  /** 本桌所有应收 table.state 的 identity(在座 + 观战);
+   *  已弃局(abandoned)座位不再是受众 —— 主动离桌者不应再被广播拉回牌桌视图,
+   *  其复座经 hello 自动回桌或 table.join 复位(onReconnect 会清除 abandoned)。 */
   audienceIdentities() {
     const ids = new Set();
-    for (const s of this.seats) if (s) ids.add(s.identity);
+    for (const s of this.seats) if (s && !s.abandoned) ids.add(s.identity);
     for (const id of this.spectators.keys()) ids.add(id);
     return ids;
   }

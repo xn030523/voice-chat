@@ -9,12 +9,14 @@ import GomokuBoard from './boards/GomokuBoard';
 import XiangqiBoard from './boards/XiangqiBoard';
 import DoudizhuTable from './boards/DoudizhuTable';
 import JunqiBoard from './boards/JunqiBoard';
+import LudoBoard from './boards/LudoBoard';
 
 const BOARDS = {
   gomoku: GomokuBoard,
   xiangqi: XiangqiBoard,
   doudizhu: DoudizhuTable,
   junqi: JunqiBoard,
+  ludo: LudoBoard,
 };
 
 export default function TableView({ games }) {

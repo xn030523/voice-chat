@@ -1189,3 +1189,20 @@ body {
 .junqi-svg {
   max-height: calc(100% - 70px);
 }
+
+/* —— 飞行棋 —— */
+
+.ludo-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ludo-pulse {
+  animation: ludo-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ludo-pulse {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.35; }
+}

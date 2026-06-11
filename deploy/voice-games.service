@@ -1,0 +1,20 @@
+[Unit]
+Description=Voice Games (独立游戏服务,崩溃/重启不影响主聊天与 LiveKit)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/voice-games
+# 直接复用 LiveKit 的密钥文件(API_KEY/API_SECRET 变量名,auth.js 双名兼容),零密钥拷贝
+EnvironmentFile=/opt/livekit/keys.env
+Environment=PORT=3001
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/env node /opt/voice-games/index.js
+Restart=always
+RestartSec=2
+# 资源护栏:即使游戏服失控也不拖垮同机的 LiveKit
+MemoryMax=512M
+CPUQuota=150%
+
+[Install]
+WantedBy=multi-user.target

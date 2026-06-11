@@ -1,7 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useVoiceChat } from '@/lib/useVoiceChat';
+import JoinScreen from './components/JoinScreen';
+import RoomHeader from './components/RoomHeader';
+import MemberList from './components/MemberList';
+import ShareStage from './components/ShareStage';
+import ChatPanel from './components/ChatPanel';
 
 export default function Home() {
   const {
@@ -13,13 +18,17 @@ export default function Home() {
     activeSharerId,
     localShareStream,
     remoteShare,
+    messages,
+    muted,
     join,
     leave,
     startShare,
     stopShare,
+    sendChat,
+    sendImage,
+    toggleMute,
   } = useVoiceChat();
   const [name, setName] = useState('');
-  const videoRef = useRef(null);
 
   const handleJoin = (e) => {
     e.preventDefault();
@@ -35,106 +44,71 @@ export default function Home() {
 
   // 优先显示他人共享的画面，否则显示自己的预览
   const shownStream = remoteShare ? remoteShare.stream : isSharing ? localShareStream : null;
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.srcObject = shownStream || null;
-      if (shownStream) videoRef.current.play().catch(() => {});
-    }
-  }, [shownStream]);
-
-  // 在线成员 = 自己 + 其他人
-  const roster = [{ id: selfId || 'self', name: name.trim() || '我', self: true }, ...members];
-  const onlineCount = (inRoom ? 1 : 0) + members.length;
-
   const someoneElseSharing = activeSharerId && activeSharerId !== selfId;
   const sharerName = remoteShare
     ? members.find((m) => m.id === remoteShare.id)?.name || '对方'
     : '';
 
+  const roster = [
+    { id: selfId || 'self', name: name.trim() || '我', self: true, state: 'connected' },
+    ...members,
+  ];
+  const onlineCount = (inRoom ? 1 : 0) + members.length;
+  const connectedCount = members.filter((m) => m.state === 'connected').length;
+
+  if (!inRoom) {
+    return (
+      <main className="page">
+        <div className="card">
+          <JoinScreen
+            name={name}
+            setName={setName}
+            onJoin={handleJoin}
+            connecting={connecting}
+            error={error}
+          />
+        </div>
+        <footer className="foot">点开网页 · 输名字 · 即说即聊</footer>
+      </main>
+    );
+  }
+
   return (
-    <main className="page">
-      <div className="card">
-        {!inRoom ? (
-          <form className="join" onSubmit={handleJoin}>
-            <div className="logo">🎙️</div>
-            <h1>语音聊天</h1>
-            <p className="subtitle">输入名字，直接加入大家的语音</p>
-            <input
-              type="text"
-              value={name}
-              maxLength={32}
-              placeholder="你的名字"
-              onChange={(e) => setName(e.target.value)}
-              disabled={connecting}
-              autoFocus
+    <main className="room-page">
+      <div className="room-shell">
+        <RoomHeader
+          onlineCount={onlineCount}
+          connected={connected}
+          isSharing={isSharing}
+          someoneElseSharing={someoneElseSharing}
+          reconnecting={reconnecting}
+          muted={muted}
+          onToggleMute={toggleMute}
+          onShare={startShare}
+          onStopShare={stopShare}
+          onLeave={leave}
+        />
+
+        {reconnecting && <div className="banner">网络中断，正在重连…</div>}
+
+        <div className="room-body">
+          <aside className="room-aside">
+            <MemberList
+              roster={roster}
+              activeSharerId={activeSharerId}
+              connectedCount={connectedCount}
+              peerTotal={members.length}
             />
-            <button type="submit" disabled={connecting || !name.trim()}>
-              {connecting ? '连接中…' : '加入语音'}
-            </button>
-            {error && <p className="error">{error}</p>}
-          </form>
-        ) : (
-          <div className="room">
-            <header className="room-head">
-              <div>
-                <h2>语音进行中</h2>
-                <span className="hint">麦克风已开启，直接说话即可</span>
-              </div>
-              <span className="count">{onlineCount} 人在线</span>
-            </header>
+          </aside>
 
-            {reconnecting && (
-              <div className="banner">网络中断，正在重连…</div>
-            )}
+          <section className={`room-main${shownStream ? ' with-share' : ''}`}>
+            <ShareStage stream={shownStream} isRemote={!!remoteShare} sharerName={sharerName} />
+            <ChatPanel messages={messages} onSend={sendChat} onSendImage={sendImage} disabled={!connected} />
+          </section>
+        </div>
 
-            {shownStream && (
-              <div className="share-view">
-                <video ref={videoRef} autoPlay playsInline muted={!remoteShare} />
-                <span className="share-label">
-                  {remoteShare ? `${sharerName} 正在共享屏幕` : '你正在共享屏幕'}
-                </span>
-              </div>
-            )}
-
-            <ul className="members">
-              {roster.map((m) => (
-                <li key={m.id} className={m.self ? 'me' : ''}>
-                  <span className="avatar">{(m.name || '?').charAt(0).toUpperCase()}</span>
-                  <span className="mname">{m.name}</span>
-                  {m.self ? (
-                    <span className="tag">你</span>
-                  ) : (
-                    <span className="dot" title="已连接" />
-                  )}
-                </li>
-              ))}
-            </ul>
-
-            {error && <p className="error">{error}</p>}
-
-            <div className="actions">
-              {isSharing ? (
-                <button className="share active" onClick={stopShare}>
-                  停止共享
-                </button>
-              ) : (
-                <button
-                  className="share"
-                  onClick={startShare}
-                  disabled={!connected || someoneElseSharing}
-                >
-                  {someoneElseSharing ? '他人共享中' : '共享屏幕'}
-                </button>
-              )}
-              <button className="leave" onClick={leave}>
-                离开语音
-              </button>
-            </div>
-          </div>
-        )}
+        {error && <p className="error room-error">{error}</p>}
       </div>
-      <footer className="foot">点开网页 · 输名字 · 即说即聊</footer>
     </main>
   );
 }

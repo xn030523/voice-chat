@@ -7,10 +7,12 @@ import SeatBar from './SeatBar';
 import ResultOverlay from './ResultOverlay';
 import GomokuBoard from './boards/GomokuBoard';
 import XiangqiBoard from './boards/XiangqiBoard';
+import DoudizhuTable from './boards/DoudizhuTable';
 
 const BOARDS = {
   gomoku: GomokuBoard,
   xiangqi: XiangqiBoard,
+  doudizhu: DoudizhuTable,
 };
 
 export default function TableView({ games }) {

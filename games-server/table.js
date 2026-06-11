@@ -248,7 +248,7 @@ export class Table {
     this.touch();
     const after = this.engine.status(this.engineState);
     if (after.phase === 'ended') {
-      this.finish({ winner: after.winner, reason: 'normal' });
+      this.finish({ winner: after.winner, reason: 'normal', detail: after.detail || null });
       return { events: res.events || [] };
     }
     return { events: res.events || [] };

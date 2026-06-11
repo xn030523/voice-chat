@@ -974,3 +974,198 @@ body {
     max-width: 80px;
   }
 }
+
+/* —— 斗地主 —— */
+
+.ddz-table {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 2px;
+  overflow: hidden;
+}
+
+.ddz-opponents {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex: none;
+}
+
+.ddz-opp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+}
+
+.ddz-opp.turn {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(129, 140, 248, 0.35);
+}
+
+.ddz-center {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ddz-bottom-cards {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ddz-lastplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 74px;
+  justify-content: center;
+}
+
+.ddz-cards-row {
+  display: flex;
+  gap: 0;
+}
+
+.ddz-cards-row .ddz-card.sm:not(:first-child) {
+  margin-left: -16px;
+}
+
+.ddz-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: none;
+  min-height: 40px;
+  flex-wrap: wrap;
+}
+
+.ddz-hand-wrap {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ddz-hand-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ddz-hand {
+  display: flex;
+  padding: 14px 8px 4px;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.ddz-card {
+  position: relative;
+  width: 52px;
+  height: 72px;
+  flex: none;
+  border-radius: 7px;
+  background: #f7f8fc;
+  border: 1px solid #b9bdcc;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  color: #232634;
+  cursor: pointer;
+  font: inherit;
+  padding: 3px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: transform 0.12s;
+}
+
+.ddz-hand .ddz-card:not(:first-child) {
+  margin-left: -26px;
+}
+
+.ddz-card.red {
+  color: #c0392b;
+}
+
+.ddz-card.sel {
+  transform: translateY(-14px);
+  border-color: var(--accent-strong);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.45);
+}
+
+.ddz-card.sm {
+  width: 40px;
+  height: 56px;
+  cursor: default;
+  pointer-events: none;
+}
+
+.ddz-card.back {
+  background: linear-gradient(135deg, #4548a8, #6366f1);
+  border-color: #3b3e94;
+}
+
+.ddz-card-rank {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ddz-card.sm .ddz-card-rank {
+  font-size: 13px;
+}
+
+.ddz-card-suit {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.ddz-card.sm .ddz-card-suit {
+  font-size: 11px;
+}
+
+.ddz-reveal {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+.ddz-reveal-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.ddz-reveal-row .ddz-card.sm {
+  width: 30px;
+  height: 42px;
+}
+
+@media (max-width: 820px) {
+  .ddz-card {
+    width: 44px;
+    height: 62px;
+  }
+
+  .ddz-hand .ddz-card:not(:first-child) {
+    margin-left: -22px;
+  }
+}

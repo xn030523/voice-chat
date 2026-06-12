@@ -1,13 +1,14 @@
 'use client';
 
-// 大厅:牌桌列表 + 创建卡片 + 回归座位横幅
+// 大厅:联机牌桌 + 街机厅 + 回归座位横幅
 import { Badge, Button, Text, ScrollArea } from '@mantine/core';
-import { Eye, Plus, Undo2 } from 'lucide-react';
+import { Eye, Plus, Undo2, Gamepad2 } from 'lucide-react';
+import { ARCADE_GAMES } from './arcade/ArcadeShell';
 
 const PHASE_LABEL = { waiting: '等待中', playing: '进行中', ended: '已结束' };
 const PHASE_COLOR = { waiting: 'teal', playing: 'indigo', ended: 'gray' };
 
-export default function Lobby({ games }) {
+export default function Lobby({ games, onArcade }) {
   const { games: metas, tables, reclaimable, createTable, joinTable, spectateTable } = games;
 
   return (
@@ -52,6 +53,22 @@ export default function Lobby({ games }) {
                   {m.minSeats === m.maxSeats ? `${m.maxSeats} 人` : `${m.minSeats}-${m.maxSeats} 人`}
                 </span>
                 <Plus size={14} className="game-pick-plus" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="lobby-section">
+          <Text size="xs" c="dimmed" fw={600} mb={6}>
+            街机厅(本机 · 单人/同屏双人 · 语音不中断)
+          </Text>
+          <div className="game-pick-grid">
+            {ARCADE_GAMES.map((g) => (
+              <button key={g.id} type="button" className="game-pick arcade" onClick={() => onArcade?.(g.id)}>
+                <span className="game-pick-icon arcade-icon">{g.icon}</span>
+                <span className="game-pick-name">{g.name}</span>
+                <span className="game-pick-seats">{g.players}</span>
+                <Gamepad2 size={14} className="game-pick-plus" />
               </button>
             ))}
           </div>

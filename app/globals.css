@@ -1239,3 +1239,101 @@ body {
     border-radius: 0;
   }
 }
+
+/* —— 街机厅 —— */
+
+.game-pick.arcade {
+  border-color: rgba(232, 200, 74, 0.35);
+}
+
+.game-pick.arcade:hover {
+  border-color: #e8c84a;
+  background: rgba(232, 200, 74, 0.1);
+}
+
+.game-pick-icon.arcade-icon {
+  background: linear-gradient(135deg, #e8c84a, #d99a2b);
+}
+
+.arcade-shell {
+  min-height: 0;
+}
+
+.arcade-menu {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px;
+}
+
+.arcade-keys {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.arcade-keys > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arcade-menu-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.arcade-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 10px 10px;
+}
+
+.arcade-hud {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: none;
+  flex-wrap: wrap;
+}
+
+.arcade-canvas-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.arcade-canvas {
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1;
+  image-rendering: pixelated;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0c0e16;
+}
+
+.arcade-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(10, 12, 22, 0.62);
+  backdrop-filter: blur(2px);
+  border-radius: 8px;
+}

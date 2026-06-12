@@ -1,12 +1,12 @@
 'use client';
 
-// 牌桌视图:座位条 + 按游戏分发棋盘 + 操作栏 + 解散投票条 + 结果遮罩 + BGM
-import { useEffect, useState } from 'react';
+// 牌桌视图:座位条 + 按游戏分发棋盘 + 操作栏 + 解散投票条 + 结果遮罩 + 场景化音频
+import { useEffect, useRef, useState } from 'react';
 import { ActionIcon, Badge, Button, Text, Tooltip } from '@mantine/core';
 import { DoorOpen, Flag, Play, Eye, Music, VolumeX } from 'lucide-react';
 import SeatBar from './SeatBar';
 import ResultOverlay from './ResultOverlay';
-import { playBgm, stopBgm, isBgmEnabled, setBgmEnabled } from '@/lib/bgm';
+import { playScene, stopAll, playSfx, isBgmEnabled, setBgmEnabled } from '@/lib/audio';
 import GomokuBoard from './boards/GomokuBoard';
 import XiangqiBoard from './boards/XiangqiBoard';
 import DoudizhuTable from './boards/DoudizhuTable';
@@ -25,13 +25,50 @@ export default function TableView({ games }) {
   const { activeTable: table, leaveTable, startGame, restartGame, sendMove, requestDissolve, voteDissolve, identity } =
     games;
   const [bgmOn, setBgmOn] = useState(isBgmEnabled);
+  const prevRef = useRef({ phase: null, version: 0, myTurn: false, game: null });
 
-  // 进桌播放对应游戏 BGM,离桌/关音停止
+  // 场景化音频:开局 intro→对局循环→胜利/失败;SFX:行动嗒声/轮到我提示
   useEffect(() => {
-    if (table && bgmOn) playBgm(table.game);
-    else stopBgm();
-    return () => stopBgm();
-  }, [table?.game, bgmOn]);
+    if (!table || !bgmOn) {
+      stopAll();
+      if (!table) prevRef.current = { phase: null, version: 0, myTurn: false, game: null };
+      return undefined;
+    }
+    const prev = prevRef.current;
+    const mySeat0 = table.you.seat;
+    const myTurnNow = table.phase === 'playing' && mySeat0 !== null && table.turn === mySeat0;
+
+    if (table.phase === 'playing') {
+      if (prev.phase !== 'playing' || prev.game !== table.game) {
+        playScene(table.game, 'intro'); // 开局短号 → 自动接循环
+      }
+      if (prev.version && table.version > prev.version) playSfx('move');
+      if (myTurnNow && !prev.myTurn) playSfx('turn');
+    } else if (table.phase === 'ended') {
+      if (prev.phase !== 'ended') {
+        const r = table.result;
+        const v = table.view;
+        let iWon = null;
+        if (mySeat0 !== null && r) {
+          if (v?.winnerCamp && v.landlord !== undefined) {
+            iWon = (v.landlord === mySeat0) === (v.winnerCamp === 'landlord'); // 斗地主按阵营
+          } else if (typeof r.winner === 'number') {
+            iWon = r.winner === mySeat0;
+          }
+        }
+        if (iWon === true) playScene(table.game, 'victory');
+        else if (iWon === false) playScene(table.game, 'defeat');
+        else stopAll(); // 观战/平局/解散:安静
+      }
+    } else {
+      stopAll(); // waiting 阶段保持安静,开局更有仪式感
+    }
+    prevRef.current = { phase: table.phase, version: table.version, myTurn: myTurnNow, game: table.game };
+    return undefined;
+  }, [table, bgmOn]);
+
+  // 卸载(离开牌桌)时停止
+  useEffect(() => () => stopAll(), []);
 
   if (!table) return null;
 

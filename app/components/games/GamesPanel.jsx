@@ -7,6 +7,7 @@ import { ActionIcon, Loader, Text, Tooltip } from '@mantine/core';
 import { WifiOff, MonitorX, KeyRound, Maximize2, Minimize2 } from 'lucide-react';
 import Lobby from './Lobby';
 import TableView from './TableView';
+import ArcadeShell from './arcade/ArcadeShell';
 
 function StatusScreen({ icon, title, sub }) {
   return (
@@ -27,6 +28,7 @@ function StatusScreen({ icon, title, sub }) {
 export default function GamesPanel({ games }) {
   const { status, activeTable, lastError, clearError } = games;
   const [expanded, setExpanded] = useState(false);
+  const [arcade, setArcade] = useState(null); // 街机厅:本机游戏 id(不依赖游戏服)
 
   // 错误提示 3s 自动消失
   useEffect(() => {
@@ -46,7 +48,10 @@ export default function GamesPanel({ games }) {
   }, [expanded]);
 
   let body;
-  if (status === 'connecting' || status === 'idle') {
+  if (arcade) {
+    // 街机优先:本机游戏,连游戏服务不可用时也能玩
+    body = <ArcadeShell gameId={arcade} onExit={() => setArcade(null)} />;
+  } else if (status === 'connecting' || status === 'idle') {
     body = <StatusScreen icon={<Loader size="sm" />} title="正在连接游戏服务…" />;
   } else if (status === 'unavailable') {
     body = (
@@ -75,7 +80,7 @@ export default function GamesPanel({ games }) {
   } else if (activeTable) {
     body = <TableView games={games} />;
   } else {
-    body = <Lobby games={games} />;
+    body = <Lobby games={games} onArcade={setArcade} />;
   }
 
   return (

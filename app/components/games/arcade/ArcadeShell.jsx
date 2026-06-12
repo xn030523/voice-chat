@@ -4,6 +4,8 @@
 import { Button, Text } from '@mantine/core';
 import { ArrowLeft } from 'lucide-react';
 import TankGame from './tank/TankGame';
+import SnowGame from './snow/SnowGame';
+import RunGame from './run/RunGame';
 
 export const ARCADE_GAMES = [
   {
@@ -14,7 +16,23 @@ export const ARCADE_GAMES = [
     players: '1-2 人同屏',
     component: TankGame,
   },
-  // 后续上架:雪球兄弟 → 像素突击(横版射击)→ 功夫龟对决
+  {
+    id: 'snow',
+    name: '雪球兄弟',
+    icon: '雪',
+    desc: '冻怪·推雪球',
+    players: '1-2 人同屏',
+    component: SnowGame,
+  },
+  {
+    id: 'run',
+    name: '像素突击',
+    icon: '突',
+    desc: '横版闯关·轰堡垒',
+    players: '1-2 人同屏',
+    component: RunGame,
+  },
+  // 后续上架:功夫龟对决
 ];
 
 export default function ArcadeShell({ gameId, onExit }) {

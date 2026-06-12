@@ -11,8 +11,6 @@ jobs:
         run: |
           npx -y zeabur@latest auth login --token "$ZEABUR_TOKEN"
           echo "=== DOMAINS ==="
-          npx -y zeabur@latest domain list --service-id 6a21c113f1be9943f1f8e80f --environment-id 6a21c0fe95b39806d284a6ac 2>&1 || true
+          npx -y zeabur@latest domain list --id 6a21c113f1be9943f1f8e80f --env-id 6a21c0fe95b39806d284a6ac -i=false 2>&1 || true
           echo "=== DEPLOYMENTS ==="
-          npx -y zeabur@latest deployment list --service-id 6a21c113f1be9943f1f8e80f --environment-id 6a21c0fe95b39806d284a6ac 2>&1 || true
-          echo "=== SERVICE ==="
-          npx -y zeabur@latest service list --project-id 6a21c0fef1be9943f1f8e80d 2>&1 || true
+          npx -y zeabur@latest deployment list --id 6a21c113f1be9943f1f8e80f --env-id 6a21c0fe95b39806d284a6ac -i=false 2>&1 || true

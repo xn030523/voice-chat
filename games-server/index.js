@@ -82,11 +82,18 @@ async function handleHello(conn, msg) {
   }
   byIdentity.set(res.identity, conn);
 
-  // 重连复位:若在座 → 取消宽限并广播
-  const myTable = lobby.tableOf(res.identity);
-  if (myTable) {
-    const cameBack = myTable.onReconnect(res.identity);
-    if (cameBack) broadcastTable(myTable, [{ kind: 'reconnected', name: res.name }]);
+  // 重连复位:仅对"非主动离开"的座位自动回桌(主动点过「离开牌桌」的,
+  // 走大厅 reclaim 横幅手动回座,避免离开后一重连又被拽回去)
+  const seatedTable = lobby.tableOf(res.identity);
+  let myTable = null;
+  if (seatedTable) {
+    const seatIdx = seatedTable.seatOf(res.identity);
+    const s = seatedTable.seats[seatIdx];
+    if (!s.left) {
+      myTable = seatedTable;
+      const cameBack = myTable.onReconnect(res.identity);
+      if (cameBack) broadcastTable(myTable, [{ kind: 'reconnected', name: res.name }]);
+    }
   }
 
   send(conn, {

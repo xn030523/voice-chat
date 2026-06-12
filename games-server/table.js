@@ -159,7 +159,7 @@ export class Table {
     return { seat: seatIdx };
   }
 
-  /** 离座(waiting 直接退;playing 中=断绑显示,触发对手解散权) */
+  /** 离座(waiting 直接退;playing 中=弃局,且标记"主动离开"——重连不再自动回桌) */
   leave(identity) {
     const seat = this.seatOf(identity);
     if (seat === null) {
@@ -170,9 +170,14 @@ export class Table {
     const s = this.seats[seat];
     if (s.graceTimer) clearTimeout(s.graceTimer);
     if (this.phase === 'playing') {
-      // 对局中主动离桌:座位保留但标记弃局,对手获得单方解散权
+      // 对局中主动离桌:座位保留但标记弃局 + 主动离开,对手获得单方解散权
       s.connected = false;
       s.abandoned = true;
+      s.left = true;
+      // 全员弃局 → 直接判解散,避免僵尸"进行中"牌桌
+      if (this.seats.every((x) => !x || x.abandoned)) {
+        this.finish({ winner: null, reason: 'dissolved' });
+      }
     } else {
       this.seats[seat] = null;
       if (identity === this.hostIdentity) this.passHost();
@@ -315,6 +320,7 @@ export class Table {
     const wasOffline = !s.connected;
     s.connected = true;
     s.abandoned = false;
+    s.left = false;
     this.touch();
     return wasOffline;
   }

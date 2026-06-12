@@ -1,0 +1,24 @@
+name: Zeabur Cleanup
+on: workflow_dispatch
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Zeabur service
+        env:
+          ZEABUR_TOKEN: ${{ secrets.ZEABUR_TOKEN }}
+          SERVICE_ID: 6a21c113f1be9943f1f8e80f
+          PROJECT_ID: 6a21c0fef1be9943f1f8e80d
+        run: |
+          echo "=== GraphQL deleteService 尝试 ==="
+          curl -s https://api.zeabur.com/graphql \
+            -H "Authorization: Bearer $ZEABUR_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"mutation { deleteService(_id: \\\"$SERVICE_ID\\\") }\"}"
+          echo
+          echo "=== 验证:service list ==="
+          npx -y zeabur@latest auth login --token "$ZEABUR_TOKEN" > /dev/null 2>&1
+          npx -y zeabur@latest service list --project-id "$PROJECT_ID" 2>&1 || true
+          echo "=== 若仍存在则 suspend 兜底 ==="
+          npx -y zeabur@latest service suspend --id "$SERVICE_ID" --project-id "$PROJECT_ID" -i=false 2>&1 || true

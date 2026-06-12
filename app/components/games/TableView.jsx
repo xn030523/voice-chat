@@ -1,10 +1,12 @@
 'use client';
 
-// 牌桌视图:座位条 + 按游戏分发棋盘 + 操作栏 + 解散投票条 + 结果遮罩
-import { Badge, Button, Text } from '@mantine/core';
-import { DoorOpen, Flag, Play, Eye } from 'lucide-react';
+// 牌桌视图:座位条 + 按游戏分发棋盘 + 操作栏 + 解散投票条 + 结果遮罩 + BGM
+import { useEffect, useState } from 'react';
+import { ActionIcon, Badge, Button, Text, Tooltip } from '@mantine/core';
+import { DoorOpen, Flag, Play, Eye, Music, VolumeX } from 'lucide-react';
 import SeatBar from './SeatBar';
 import ResultOverlay from './ResultOverlay';
+import { playBgm, stopBgm, isBgmEnabled, setBgmEnabled } from '@/lib/bgm';
 import GomokuBoard from './boards/GomokuBoard';
 import XiangqiBoard from './boards/XiangqiBoard';
 import DoudizhuTable from './boards/DoudizhuTable';
@@ -22,6 +24,15 @@ const BOARDS = {
 export default function TableView({ games }) {
   const { activeTable: table, leaveTable, startGame, restartGame, sendMove, requestDissolve, voteDissolve, identity } =
     games;
+  const [bgmOn, setBgmOn] = useState(isBgmEnabled);
+
+  // 进桌播放对应游戏 BGM,离桌/关音停止
+  useEffect(() => {
+    if (table && bgmOn) playBgm(table.game);
+    else stopBgm();
+    return () => stopBgm();
+  }, [table?.game, bgmOn]);
+
   if (!table) return null;
 
   const mySeat = table.you.seat;
@@ -104,6 +115,21 @@ export default function TableView({ games }) {
           )}
         </div>
         <div className="games-head-actions">
+          <Tooltip label={bgmOn ? '关闭音乐' : '开启音乐'} withArrow>
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              color={bgmOn ? 'indigo' : 'gray'}
+              onClick={() => {
+                const v = !bgmOn;
+                setBgmOn(v);
+                setBgmEnabled(v);
+              }}
+              aria-label="音乐开关"
+            >
+              {bgmOn ? <Music size={14} /> : <VolumeX size={14} />}
+            </ActionIcon>
+          </Tooltip>
           {seated && table.phase === 'playing' && !table.dissolve && (
             <Button size="xs" variant="subtle" color="red" leftSection={<Flag size={13} />} onClick={requestDissolve}>
               {someoneAbandoned ? '解散本局' : '申请解散'}

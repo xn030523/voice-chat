@@ -81,8 +81,8 @@ export default function DoudizhuTable({ table, onMove }) {
     myTurn &&
     !!findPlay(view.hand || [], view.lastPlay && view.lastPlay.seat !== mySeat ? view.lastPlay.parsed : null);
 
-  // 其他两家(相对位:上家/下家)
-  const others = [1, 2]
+  // 对家两人:上家在左、下家在右(出牌动线 我 → 右(下家) → 左(上家),与通行牌桌惯例一致)
+  const others = [2, 1]
     .map((d) => (mySeat !== null ? (mySeat + d) % 3 : d - 1))
     .map((seat) => ({ seat, info: table.seats[seat], count: view.counts[seat] }));
 

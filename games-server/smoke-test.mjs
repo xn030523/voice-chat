@@ -74,12 +74,12 @@ A.send({ type: 'table.create', game: 'gomoku' });
 const stA = await A.recv((m) => m.type === 'table.state', 'A 建桌 state');
 if (stA.you.seat !== 0 || stA.phase !== 'waiting') fail('建桌后应坐 0 号位 waiting');
 const tableId = stA.tableId;
-const lobbyB = await B.recv((m) => m.type === 'lobby' && m.tables.length === 1, 'B 收到大厅更新');
-ok(`A 建桌 ${tableId},B 大厅可见(${lobbyB.tables[0].gameName})`);
-
 B.send({ type: 'table.join', tableId });
 await B.recv((m) => m.type === 'table.state' && m.you.seat === 1, 'B 入座 state');
 ok('B 坐 1 号位');
+// 大厅广播:B 应能在 lobby 摘要中看到这张桌(不假设服务器为空)
+const lobbyB = await B.recv((m) => m.type === 'lobby' && m.tables.some((t) => t.id === tableId), 'B 大厅含本桌');
+ok(`大厅广播可见本桌(共 ${lobbyB.tables.length} 桌)`);
 
 // 4. 非房主开局拒;房主开局
 B.send({ type: 'table.start' });

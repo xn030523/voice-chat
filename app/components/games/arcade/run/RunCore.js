@@ -62,11 +62,19 @@ export class RunCore {
     this.raf = null;
     this.last = 0;
     this.camX = 0;
+    const typing = (e) => {
+      const t = e.target;
+      return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+    };
     this._kd = (e) => {
+      if (typing(e)) return; // 聊天框打字不操控游戏、不吞按键
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
       this.keys.add(e.key.length === 1 ? e.key.toLowerCase() : e.key);
     };
-    this._ku = (e) => this.keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key);
+    this._ku = (e) => {
+      if (typing(e)) return;
+      this.keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key);
+    };
   }
 
   start() {

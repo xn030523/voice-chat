@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import TankGame from './tank/TankGame';
 import SnowGame from './snow/SnowGame';
 import RunGame from './run/RunGame';
+import FightGame from './fight/FightGame';
 
 export const ARCADE_GAMES = [
   {
@@ -32,7 +33,14 @@ export const ARCADE_GAMES = [
     players: '1-2 人同屏',
     component: RunGame,
   },
-  // 后续上架:功夫龟对决
+  {
+    id: 'fight',
+    name: '功夫龟对决',
+    icon: '龟',
+    desc: '1v1 格斗·KO 制',
+    players: '1-2 人对打',
+    component: FightGame,
+  },
 ];
 
 export default function ArcadeShell({ gameId, onExit }) {

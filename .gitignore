@@ -8,6 +8,7 @@ npm-debug.log*
 public/roms/*
 !public/roms/roms.json
 !public/roms/README.md
+!public/roms/CREDITS.md
 
 # EmulatorJS 自托管运行时(开源内核,~20MB,部署 rsync 同步,不入 GitHub)
 public/emulator/data

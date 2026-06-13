@@ -46,6 +46,9 @@ ${DOMAIN} {
 	handle_path /games* {
 		reverse_proxy localhost:${GAMES_PORT}
 	}
+	handle /socket.io* {
+		reverse_proxy localhost:3002
+	}
 	handle /rtc* {
 		reverse_proxy localhost:${LIVEKIT_PORT}
 	}

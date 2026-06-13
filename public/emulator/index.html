@@ -93,6 +93,17 @@
         window.EJS_threads = false;
         window.EJS_askBeforeExit = false;
         window.EJS_backgroundColor = '#0a0c14';
+        // 联机(netplay):socket.io 走同源 /socket.io → Caddy → 47.77:3002(Rust 信令服务)
+        // 房主开局点 🌐 生成链接,他人进来默认观战,房主可分配手柄变玩家。
+        if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+          window.EJS_netplayServer = location.protocol + '//' + location.host;
+          window.EJS_netplayICEServers = [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+            { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+          ];
+        }
         var s = document.createElement('script');
         s.src = dataPath + 'loader.js';
         s.onerror = function () {

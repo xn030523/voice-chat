@@ -1,6 +1,7 @@
 {
   "_comment": "经典游戏目录(卡带槽)。把对应 ROM 文件放进本目录,游戏即从『待投放』变『可玩』。详见 README.md。条目仅为标签,不含任何游戏内容。",
   "games": [
+    { "id": "nova", "name": "松鼠诺娃(开源)", "core": "nes", "file": "nova.nes", "system": "免费开源", "players": "1P" },
     { "id": "battlecity", "name": "坦克大战", "core": "nes", "file": "battlecity.nes", "system": "FC", "players": "1-2P" },
     { "id": "contra", "name": "魂斗罗", "core": "nes", "file": "contra.nes", "system": "FC", "players": "1-2P" },
     { "id": "superc", "name": "超级魂斗罗", "core": "nes", "file": "superc.nes", "system": "FC", "players": "1-2P" },

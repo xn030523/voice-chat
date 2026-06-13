@@ -8,7 +8,7 @@ import { ARCADE_GAMES } from './arcade/ArcadeShell';
 const PHASE_LABEL = { waiting: '等待中', playing: '进行中', ended: '已结束' };
 const PHASE_COLOR = { waiting: 'teal', playing: 'indigo', ended: 'gray' };
 
-export default function Lobby({ games, emuGames = [], onArcade }) {
+export default function Lobby({ games, emuGames = [], emuPresent = new Set(), onArcade }) {
   const { games: metas, tables, reclaimable, createTable, joinTable, spectateTable } = games;
 
   return (
@@ -84,21 +84,41 @@ export default function Lobby({ games, emuGames = [], onArcade }) {
             <Text size="xs" c="dimmed" fw={600} mb={6}>
               经典模拟器(真机 ROM · 原版音画 · 语音不中断)
             </Text>
-            <div className="game-pick-grid">
-              {emuGames.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  className="game-pick emu"
-                  onClick={() => onArcade?.({ type: 'emu', game: g })}
-                >
-                  <span className="game-pick-icon emu-icon">{(g.name || '?').slice(0, 1)}</span>
-                  <span className="game-pick-name">{g.name}</span>
-                  <span className="game-pick-seats">{g.players || g.core?.toUpperCase()}</span>
-                  <Gamepad2 size={14} className="game-pick-plus" />
-                </button>
-              ))}
-            </div>
+            {Object.entries(
+              emuGames.reduce((acc, g) => {
+                (acc[g.system || g.core] ||= []).push(g);
+                return acc;
+              }, {})
+            ).map(([sys, list]) => (
+              <div key={sys} className="emu-sys-group">
+                <Text size="xs" c="dimmed" mb={4} className="emu-sys-label">
+                  {sys}
+                </Text>
+                <div className="game-pick-grid">
+                  {list.map((g) => {
+                    const ready = emuPresent.has(g.id);
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        className={`game-pick emu${ready ? '' : ' slot'}`}
+                        onClick={() => onArcade?.({ type: 'emu', game: g })}
+                        title={ready ? '' : `待投放卡带:${g.file}`}
+                      >
+                        <span className="game-pick-icon emu-icon">{(g.name || '?').slice(0, 1)}</span>
+                        <span className="game-pick-name">{g.name}</span>
+                        <span className="game-pick-seats">{g.players || g.core?.toUpperCase()}</span>
+                        {ready ? (
+                          <Gamepad2 size={14} className="game-pick-plus" />
+                        ) : (
+                          <span className="emu-slot-badge">待投放</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

@@ -3,3 +3,8 @@ node_modules
 out
 .env.local
 npm-debug.log*
+
+# 模拟器 ROM 二进制(版权文件不入 GitHub,仅部署同步到自有服务器)
+public/roms/*
+!public/roms/roms.json
+!public/roms/README.md

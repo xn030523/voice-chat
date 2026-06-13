@@ -7,6 +7,7 @@ import TankGame from './tank/TankGame';
 import SnowGame from './snow/SnowGame';
 import RunGame from './run/RunGame';
 import FightGame from './fight/FightGame';
+import EmulatorShell from './EmulatorShell';
 
 export const ARCADE_GAMES = [
   {
@@ -43,8 +44,12 @@ export const ARCADE_GAMES = [
   },
 ];
 
-export default function ArcadeShell({ gameId, onExit }) {
-  const game = ARCADE_GAMES.find((g) => g.id === gameId);
+export default function ArcadeShell({ selection, onExit }) {
+  // selection: { type:'builtin', id } | { type:'emu', game }
+  if (selection?.type === 'emu') {
+    return <EmulatorShell game={selection.game} onExit={onExit} />;
+  }
+  const game = ARCADE_GAMES.find((g) => g.id === selection?.id);
   if (!game) return null;
   const GameComp = game.component;
   return (

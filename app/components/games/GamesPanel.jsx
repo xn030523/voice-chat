@@ -28,7 +28,22 @@ function StatusScreen({ icon, title, sub }) {
 export default function GamesPanel({ games }) {
   const { status, activeTable, lastError, clearError } = games;
   const [expanded, setExpanded] = useState(false);
-  const [arcade, setArcade] = useState(null); // 街机厅:本机游戏 id(不依赖游戏服)
+  const [arcade, setArcade] = useState(null); // {type:'builtin',id} | {type:'emu',game}(不依赖游戏服)
+  const [emuGames, setEmuGames] = useState([]); // 经典模拟器清单(public/roms/roms.json)
+
+  // 拉取模拟器 ROM 清单(失败/为空则不显示该区,不影响其他功能)
+  useEffect(() => {
+    let alive = true;
+    fetch('/roms/roms.json', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (alive && d && Array.isArray(d.games)) setEmuGames(d.games.filter((g) => g && g.id && g.core && g.file));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // 错误提示 3s 自动消失
   useEffect(() => {
@@ -49,8 +64,8 @@ export default function GamesPanel({ games }) {
 
   let body;
   if (arcade) {
-    // 街机优先:本机游戏,连游戏服务不可用时也能玩
-    body = <ArcadeShell gameId={arcade} onExit={() => setArcade(null)} />;
+    // 街机/模拟器优先:本机运行,游戏服务不可用时也能玩
+    body = <ArcadeShell selection={arcade} onExit={() => setArcade(null)} />;
   } else if (status === 'connecting' || status === 'idle') {
     body = <StatusScreen icon={<Loader size="sm" />} title="正在连接游戏服务…" />;
   } else if (status === 'unavailable') {
@@ -80,7 +95,7 @@ export default function GamesPanel({ games }) {
   } else if (activeTable) {
     body = <TableView games={games} />;
   } else {
-    body = <Lobby games={games} onArcade={setArcade} />;
+    body = <Lobby games={games} emuGames={emuGames} onArcade={setArcade} />;
   }
 
   return (

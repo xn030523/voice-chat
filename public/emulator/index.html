@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>经典模拟器</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #0a0c14; overflow: hidden; }
+    #game { width: 100vw; height: 100vh; }
+    #err {
+      position: fixed; inset: 0; display: none; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px;
+      color: #cbd2e6; font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; text-align: center; padding: 24px;
+    }
+    #err b { color: #f1f5f9; font-size: 18px; }
+    #err span { color: #8a93ab; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div id="err">
+    <b>游戏加载失败</b>
+    <span id="errmsg">未指定 ROM,或文件不存在。</span>
+  </div>
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      var core = q.get('core');
+      var rom = q.get('rom');
+      var name = q.get('name') || '游戏';
+      var bios = q.get('bios') || '';
+      function fail(msg) {
+        document.getElementById('game').style.display = 'none';
+        var e = document.getElementById('err');
+        if (msg) document.getElementById('errmsg').textContent = msg;
+        e.style.display = 'flex';
+      }
+      if (!core || !rom) { fail('缺少 core 或 rom 参数。'); return; }
+
+      // EmulatorJS 配置:单线程(threads off)→ 无需 SharedArrayBuffer / 跨域隔离头,
+      // 因此可安全嵌入普通 iframe,完全不影响主站语音/聊天。
+      window.EJS_player = '#game';
+      window.EJS_core = core;
+      window.EJS_gameUrl = rom;
+      window.EJS_gameName = name;
+      if (bios) window.EJS_biosUrl = bios;
+      window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+      window.EJS_startOnLoaded = true;
+      window.EJS_threads = false;
+      window.EJS_askBeforeExit = false;
+      window.EJS_backgroundColor = '#0a0c14';
+      // 默认键位提示:方向键移动,X/Z 为 A/B 键(EmulatorJS 默认映射)
+      window.EJS_onGameStart = function () {};
+
+      var s = document.createElement('script');
+      s.src = window.EJS_pathtodata + 'loader.js';
+      s.onerror = function () { fail('模拟器内核加载失败(CDN 不可达?)。'); };
+      document.body.appendChild(s);
+    })();
+  </script>
+</body>
+</html>

@@ -8,7 +8,7 @@ import { ARCADE_GAMES } from './arcade/ArcadeShell';
 const PHASE_LABEL = { waiting: '等待中', playing: '进行中', ended: '已结束' };
 const PHASE_COLOR = { waiting: 'teal', playing: 'indigo', ended: 'gray' };
 
-export default function Lobby({ games, onArcade }) {
+export default function Lobby({ games, emuGames = [], onArcade }) {
   const { games: metas, tables, reclaimable, createTable, joinTable, spectateTable } = games;
 
   return (
@@ -64,7 +64,12 @@ export default function Lobby({ games, onArcade }) {
           </Text>
           <div className="game-pick-grid">
             {ARCADE_GAMES.map((g) => (
-              <button key={g.id} type="button" className="game-pick arcade" onClick={() => onArcade?.(g.id)}>
+              <button
+                key={g.id}
+                type="button"
+                className="game-pick arcade"
+                onClick={() => onArcade?.({ type: 'builtin', id: g.id })}
+              >
                 <span className="game-pick-icon arcade-icon">{g.icon}</span>
                 <span className="game-pick-name">{g.name}</span>
                 <span className="game-pick-seats">{g.players}</span>
@@ -73,6 +78,29 @@ export default function Lobby({ games, onArcade }) {
             ))}
           </div>
         </div>
+
+        {emuGames.length > 0 && (
+          <div className="lobby-section">
+            <Text size="xs" c="dimmed" fw={600} mb={6}>
+              经典模拟器(真机 ROM · 原版音画 · 语音不中断)
+            </Text>
+            <div className="game-pick-grid">
+              {emuGames.map((g) => (
+                <button
+                  key={g.id}
+                  type="button"
+                  className="game-pick emu"
+                  onClick={() => onArcade?.({ type: 'emu', game: g })}
+                >
+                  <span className="game-pick-icon emu-icon">{(g.name || '?').slice(0, 1)}</span>
+                  <span className="game-pick-name">{g.name}</span>
+                  <span className="game-pick-seats">{g.players || g.core?.toUpperCase()}</span>
+                  <Gamepad2 size={14} className="game-pick-plus" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="lobby-section">
           <Text size="xs" c="dimmed" fw={600} mb={6}>

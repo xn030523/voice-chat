@@ -4,6 +4,10 @@
 // 跑·跳·射,突破敌阵,干掉关底装甲堡垒!
 import { playSfx } from '@/lib/audio';
 import { pollGamepads } from '@/lib/gamepad';
+import { preload, drawSprite, charPose } from '@/lib/sprites';
+
+const CHAR_SPRITES = {};
+for (const who of ['p1', 'p2', 'enemy']) for (const pose of ['stand', 'walk1', 'walk2', 'jump']) CHAR_SPRITES[`${who}_${pose}`] = `/sprites/char/${who}_${pose}.png`;
 
 const GP_MAPS = [
   { up: 'w', left: 'a', right: 'd', a: 'j' },
@@ -85,6 +89,7 @@ export class RunCore {
   }
 
   start() {
+    preload(CHAR_SPRITES);
     window.addEventListener('keydown', this._kd);
     window.addEventListener('keyup', this._ku);
     const w = buildWorld();
@@ -483,7 +488,14 @@ export class RunCore {
     if (a.shield > 0 && Math.floor(performance.now() / 120) % 2) return;
     const x = a.x - cam;
     const y = a.y;
-    // 腿(跑动)
+    const who = a.kind === 'player' ? (a.player === 0 ? 'p1' : 'p2') : 'enemy';
+    const pose = charPose(who, { onGround: a.onGround, moving: Math.abs(a.vx) > 1, anim: a.anim });
+    // Kenney 角色绘制到约 24×34,脚底对齐
+    const w = 26, h = 34;
+    const dx = x + a.w / 2 - w / 2;
+    const dy = y + a.h - h + 2;
+    if (drawSprite(ctx, pose, dx, dy, w, h, face < 0)) return;
+    // 兜底:火柴人矢量
     const sw = a.vx !== 0 ? Math.sin(a.anim * 2.2) * 4 : 0;
     ctx.strokeStyle = '#2a2d3e';
     ctx.lineWidth = 3;
@@ -493,15 +505,12 @@ export class RunCore {
     ctx.moveTo(x + 9, y + 18);
     ctx.lineTo(x + 13 - sw, y + 26);
     ctx.stroke();
-    // 身体
     ctx.fillStyle = color;
     ctx.fillRect(x + 4, y + 8, 10, 11);
-    // 头+头盔
     ctx.fillStyle = '#e8c9a8';
     ctx.fillRect(x + 5, y + 3, 8, 6);
     ctx.fillStyle = color;
     ctx.fillRect(x + 4, y + 1, 10, 4);
-    // 枪
     ctx.fillStyle = '#1d2030';
     ctx.fillRect(face > 0 ? x + 12 : x - 6, y + 11, 12, 3);
   }

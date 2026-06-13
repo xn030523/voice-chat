@@ -4,6 +4,10 @@
 // 敌人被雪球打满 3 发变成大雪球 → 推动滚雪球弹墙碾压全场!
 import { playSfx } from '@/lib/audio';
 import { pollGamepads } from '@/lib/gamepad';
+import { preload, drawSprite, charPose } from '@/lib/sprites';
+
+const CHAR_SPRITES = {};
+for (const who of ['p1', 'p2']) for (const pose of ['stand', 'walk1', 'walk2', 'jump']) CHAR_SPRITES[`${who}_${pose}`] = `/sprites/char/${who}_${pose}.png`;
 
 const GP_MAPS = [
   { up: 'w', down: 's', left: 'a', right: 'd', a: 'j' },
@@ -91,6 +95,7 @@ export class SnowCore {
   }
 
   start() {
+    preload(CHAR_SPRITES);
     window.addEventListener('keydown', this._kd);
     window.addEventListener('keyup', this._ku);
     this.loadLevel(0);
@@ -446,26 +451,26 @@ export class SnowCore {
     const { ctx } = this;
     if (p.shield > 0 && Math.floor(performance.now() / 120) % 2) return; // 无敌闪烁
     const x = p.x, y = p.y;
-    // 身体
+    const who = p.player === 0 ? 'p1' : 'p2';
+    const pose = charPose(who, { onGround: p.onGround, moving: p.vx !== 0, anim: p.anim });
+    // Kenney 角色 80×110,绘制到约 28×38,脚底对齐 p.y+p.h
+    const w = 30, h = 40;
+    const dx = x + p.w / 2 - w / 2;
+    const dy = y + p.h - h + 4;
+    if (drawSprite(ctx, pose, dx, dy, w, h, p.face < 0)) return;
+    // 兜底:雪人矢量
     ctx.fillStyle = '#f4f8ff';
     ctx.beginPath();
     ctx.arc(x + 11, y + 16, 10, 0, Math.PI * 2);
     ctx.fill();
-    // 帽子(玩家色)
     ctx.fillStyle = p.color;
     ctx.beginPath();
     ctx.arc(x + 11, y + 8, 8, Math.PI, 0);
     ctx.fill();
     ctx.fillRect(x + 2, y + 7, 18, 3);
-    // 脸
     ctx.fillStyle = '#1d2030';
     ctx.fillRect(x + (p.face > 0 ? 12 : 6), y + 11, 2.6, 2.6);
     ctx.fillRect(x + (p.face > 0 ? 16 : 2), y + 11, 2.6, 2.6);
-    // 脚(走路摆动)
-    const sw = p.vx !== 0 ? Math.sin(p.anim * 2.4) * 3 : 0;
-    ctx.fillStyle = p.color;
-    ctx.fillRect(x + 4 + sw, y + 24, 6, 3);
-    ctx.fillRect(x + 12 - sw, y + 24, 6, 3);
   }
 
   drawEnemy(e) {

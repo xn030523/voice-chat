@@ -8,16 +8,18 @@ import { Button, Code, Text } from '@mantine/core';
 import { ArrowLeft, Maximize2, PackageOpen } from 'lucide-react';
 
 export default function EmulatorShell({ game, onExit }) {
-  const [status, setStatus] = useState('checking'); // checking | ready | missing
+  const [status, setStatus] = useState(game.pick ? 'ready' : 'checking'); // checking | ready | missing
   const romUrl = `/roms/${game.file}`;
   const src = useMemo(() => {
+    if (game.pick) return '/emulator/index.html?pick=1'; // 本地载入模式
     const p = new URLSearchParams({ core: game.core, rom: romUrl, name: game.name });
     if (game.bios) p.set('bios', `/roms/${game.bios}`);
     return `/emulator/index.html?${p.toString()}`;
   }, [game, romUrl]);
 
-  // 进入前先确认卡带是否已放入(避免直接进模拟器再报错)
+  // 服务器卡带模式:进入前确认卡带是否已放入(本地载入模式跳过)
   useEffect(() => {
+    if (game.pick) return undefined;
     let alive = true;
     setStatus('checking');
     fetch(romUrl, { method: 'HEAD' })
@@ -26,7 +28,7 @@ export default function EmulatorShell({ game, onExit }) {
     return () => {
       alive = false;
     };
-  }, [romUrl]);
+  }, [romUrl, game.pick]);
 
   return (
     <div className="games-body arcade-shell">

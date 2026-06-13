@@ -1423,3 +1423,17 @@ body {
   padding: 24px;
   text-align: center;
 }
+
+/* —— 本地载入 ROM 卡片 —— */
+.game-pick.emu.local-rom {
+  border-color: rgba(80, 200, 160, 0.6);
+  background: rgba(80, 200, 160, 0.08);
+}
+.game-pick.emu.local-rom:hover {
+  border-color: #50c8a0;
+  background: rgba(80, 200, 160, 0.16);
+}
+.game-pick.emu.local-rom .emu-icon {
+  background: linear-gradient(135deg, #50c8a0, #2b9d7a);
+  font-size: 18px;
+}

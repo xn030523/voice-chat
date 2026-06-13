@@ -84,6 +84,18 @@ export default function Lobby({ games, emuGames = [], emuPresent = new Set(), on
             <Text size="xs" c="dimmed" fw={600} mb={6}>
               经典模拟器(真机 ROM · 原版音画 · 语音不中断)
             </Text>
+            <div className="game-pick-grid" style={{ marginBottom: 10 }}>
+              <button
+                type="button"
+                className="game-pick emu local-rom"
+                onClick={() => onArcade?.({ type: 'emu', game: { id: '__local', name: '载入本地 ROM', pick: true } })}
+                title="选择你自己电脑上的 ROM,只在本浏览器运行,不上传"
+              >
+                <span className="game-pick-icon emu-icon">📂</span>
+                <span className="game-pick-name">载入本地 ROM</span>
+                <span className="game-pick-seats">用你自己的卡带</span>
+              </button>
+            </div>
             {Object.entries(
               emuGames.reduce((acc, g) => {
                 (acc[g.system || g.core] ||= []).push(g);

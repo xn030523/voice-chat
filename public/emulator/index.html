@@ -5,15 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>经典模拟器</title>
   <style>
-    html, body { margin: 0; height: 100%; background: #0a0c14; overflow: hidden; }
+    html, body { margin: 0; height: 100%; background: #0a0c14; overflow: hidden;
+      font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
     #game { width: 100vw; height: 100vh; }
-    #err {
+    #err, #pick {
       position: fixed; inset: 0; display: none; flex-direction: column;
-      align-items: center; justify-content: center; gap: 10px;
-      color: #cbd2e6; font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; text-align: center; padding: 24px;
+      align-items: center; justify-content: center; gap: 12px;
+      color: #cbd2e6; text-align: center; padding: 24px;
     }
-    #err b { color: #f1f5f9; font-size: 18px; }
-    #err span { color: #8a93ab; font-size: 13px; }
+    #err b, #pick b { color: #f1f5f9; font-size: 18px; }
+    #err span, #pick span { color: #8a93ab; font-size: 13px; max-width: 460px; }
+    #pick .row { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
+    #pick select, #pick label.btn {
+      background: #1d2233; color: #e6ebf5; border: 1px solid #313850; border-radius: 8px;
+      padding: 9px 16px; font-size: 14px; cursor: pointer;
+    }
+    #pick label.btn { background: linear-gradient(135deg, #50c8a0, #2b9d7a); border: 0; font-weight: 700; }
+    #pick input[type=file] { display: none; }
+    #pick .note { color: #6f7793; font-size: 12px; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -22,6 +31,25 @@
     <b>游戏加载失败</b>
     <span id="errmsg">未指定 ROM,或文件不存在。</span>
   </div>
+  <div id="pick">
+    <b>📂 载入本地 ROM</b>
+    <span>选择你自己电脑上的 ROM 文件 —— 文件只在本浏览器读取运行,<b>不会上传、不经过服务器</b>。</span>
+    <div class="row">
+      <select id="sys">
+        <option value="auto">按扩展名自动识别</option>
+        <option value="nes">FC / NES (.nes)</option>
+        <option value="snes">超任 SFC (.sfc/.smc)</option>
+        <option value="segaMD">世嘉 MD (.md/.bin/.gen)</option>
+        <option value="gb">GB / GBC (.gb/.gbc)</option>
+        <option value="gba">GBA (.gba)</option>
+        <option value="segaMS">世嘉 SMS (.sms)</option>
+        <option value="arcade">街机 FBNeo (.zip)</option>
+        <option value="n64">N64 (.n64/.z64)</option>
+      </select>
+      <label class="btn">选择文件<input id="file" type="file" /></label>
+    </div>
+    <span class="note">提示:街机(.zip)需放入对应 romset,部分游戏还需 BIOS。</span>
+  </div>
   <script>
     (function () {
       var q = new URLSearchParams(location.search);
@@ -29,20 +57,32 @@
       var rom = q.get('rom');
       var name = q.get('name') || '游戏';
       var bios = q.get('bios') || '';
-      function fail(msg) {
-        document.getElementById('game').style.display = 'none';
-        var e = document.getElementById('err');
-        if (msg) document.getElementById('errmsg').textContent = msg;
-        e.style.display = 'flex';
-      }
-      if (!core || !rom) { fail('缺少 core 或 rom 参数。'); return; }
+      var pick = q.get('pick') === '1';
 
       var LOCAL = '/emulator/data/';
       var CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
+      function fail(msg) {
+        document.getElementById('game').style.display = 'none';
+        document.getElementById('pick').style.display = 'none';
+        var e = document.getElementById('err');
+        if (msg) document.getElementById('errmsg').textContent = msg;
+        e.style.display = 'flex';
+      }
+
+      // 扩展名 → 内核
+      var EXT2CORE = {
+        nes: 'nes', fds: 'nes', unf: 'nes',
+        sfc: 'snes', smc: 'snes',
+        md: 'segaMD', gen: 'segaMD', bin: 'segaMD', smd: 'segaMD',
+        gb: 'gb', gbc: 'gb', sgb: 'gb',
+        gba: 'gba',
+        sms: 'segaMS', gg: 'segaGG',
+        n64: 'n64', z64: 'n64', v64: 'n64',
+        zip: 'arcade', a26: 'atari2600'
+      };
+
       function boot(dataPath) {
-        // EmulatorJS 配置:单线程(threads off)→ 无需 SharedArrayBuffer / 跨域隔离头,
-        // 因此可安全嵌入普通 iframe,完全不影响主站语音/聊天。
         window.EJS_player = '#game';
         window.EJS_core = core;
         window.EJS_gameUrl = rom;
@@ -53,24 +93,41 @@
         window.EJS_threads = false;
         window.EJS_askBeforeExit = false;
         window.EJS_backgroundColor = '#0a0c14';
-
         var s = document.createElement('script');
         s.src = dataPath + 'loader.js';
         s.onerror = function () {
-          if (dataPath !== CDN) {
-            // 本地内核缺失/损坏 → 回退 CDN
-            boot(CDN);
-          } else {
-            fail('模拟器内核加载失败(本地与 CDN 均不可达)。');
-          }
+          if (dataPath !== CDN) boot(CDN);
+          else fail('模拟器内核加载失败(本地与 CDN 均不可达)。');
         };
         document.body.appendChild(s);
       }
 
-      // 本地优先:探测自托管内核是否就位(version.json),否则用 CDN
-      fetch(LOCAL + 'version.json', { method: 'HEAD' })
-        .then(function (r) { boot(r.ok ? LOCAL : CDN); })
-        .catch(function () { boot(CDN); });
+      function start() {
+        // 本地优先:探测自托管内核(version.json),否则 CDN
+        fetch(LOCAL + 'version.json', { method: 'HEAD' })
+          .then(function (r) { boot(r.ok ? LOCAL : CDN); })
+          .catch(function () { boot(CDN); });
+      }
+
+      if (pick && !rom) {
+        // 本地载入模式:显示文件选择器
+        document.getElementById('pick').style.display = 'flex';
+        document.getElementById('file').addEventListener('change', function (ev) {
+          var f = ev.target.files && ev.target.files[0];
+          if (!f) return;
+          var ext = (f.name.split('.').pop() || '').toLowerCase();
+          var sel = document.getElementById('sys').value;
+          core = sel === 'auto' ? (EXT2CORE[ext] || 'nes') : sel;
+          name = f.name.replace(/\.[^.]+$/, '');
+          rom = URL.createObjectURL(f); // blob:,仅本浏览器内存,不上传
+          document.getElementById('pick').style.display = 'none';
+          start();
+        });
+        return;
+      }
+
+      if (!core || !rom) { fail('缺少 core 或 rom 参数。'); return; }
+      start();
     })();
   </script>
 </body>

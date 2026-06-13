@@ -4,6 +4,40 @@
 // 单人 / 同屏双人(P1: WASD+J  P2: 方向键+回车/0)
 // 纯本机游戏:不经 games-server,崩了也只影响本面板,语音聊天照常。
 import { playSfx } from '@/lib/audio';
+import { pollGamepads } from '@/lib/gamepad';
+import { preload, sprite } from '@/lib/sprites';
+
+// Kenney CC0 坦克精灵(车身/炮管/子弹/烟雾)
+const TANK_SPRITES = {
+  body_beige: '/sprites/tank/body_beige.png',
+  body_green: '/sprites/tank/body_green.png',
+  body_red: '/sprites/tank/body_red.png',
+  body_black: '/sprites/tank/body_black.png',
+  body_blue: '/sprites/tank/body_blue.png',
+  barrel_beige: '/sprites/tank/barrel_beige.png',
+  barrel_green: '/sprites/tank/barrel_green.png',
+  barrel_red: '/sprites/tank/barrel_red.png',
+  barrel_black: '/sprites/tank/barrel_black.png',
+  barrel_blue: '/sprites/tank/barrel_blue.png',
+  bullet: '/sprites/tank/bullet.png',
+  smoke0: '/sprites/tank/smoke0.png',
+  smoke1: '/sprites/tank/smoke1.png',
+  smoke2: '/sprites/tank/smoke2.png',
+  smoke3: '/sprites/tank/smoke3.png',
+  smoke4: '/sprites/tank/smoke4.png',
+  smoke5: '/sprites/tank/smoke5.png',
+};
+// 坦克配色:P1 米/P2 绿;敌方 basic 黑 / fast 蓝 / heavy 红
+function tankColorName(t) {
+  if (t.kind === 'player') return t.player === 0 ? 'beige' : 'green';
+  return t.type?.id === 'fast' ? 'blue' : t.type?.id === 'heavy' ? 'red' : 'black';
+}
+
+// 手柄→键位映射(与键盘一致)
+const GP_MAPS = [
+  { up: 'w', down: 's', left: 'a', right: 'd', a: 'j' },
+  { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', a: 'Enter' },
+];
 
 const GRID = 26; // 26×26 半格制
 export const CELL = 16;
@@ -131,6 +165,7 @@ export class TankCore {
     this.players = opts.players || 1;
     this.onEvent = opts.onEvent || (() => {});
     this.keys = new Set();
+    this._gp = [new Set(), new Set()];
     this.running = false;
     this.paused = false;
     this.levelIndex = 0;
@@ -155,6 +190,7 @@ export class TankCore {
   }
 
   start() {
+    preload(TANK_SPRITES); // 异步预加载,未就绪前 render 走兜底矢量绘制
     window.addEventListener('keydown', this._keydown);
     window.addEventListener('keyup', this._keyup);
     this.loadLevel(0);
@@ -266,6 +302,7 @@ export class TankCore {
 
   // ---------- 更新 ----------
   update(dt) {
+    pollGamepads(this.keys, this._gp, GP_MAPS.slice(0, this.players));
     // 敌人补充
     this.spawnTimer -= dt * 1000;
     if (this.spawnTimer <= 0) {
@@ -525,26 +562,47 @@ export class TankCore {
     // 坦克
     for (const t of this.tanks) this.drawTank(t);
     // 子弹
-    ctx.fillStyle = '#f5f6fa';
-    for (const b of this.bullets) ctx.fillRect(b.x, b.y, BULLET_SIZE, BULLET_SIZE);
+    const bimg = sprite('bullet');
+    for (const b of this.bullets) {
+      if (bimg) {
+        const ang = { up: 0, right: Math.PI / 2, down: Math.PI, left: -Math.PI / 2 }[b.dir];
+        ctx.save();
+        ctx.translate(b.x + BULLET_SIZE / 2, b.y + BULLET_SIZE / 2);
+        ctx.rotate(ang);
+        ctx.drawImage(bimg, -5, -9, 10, 18);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = '#f5f6fa';
+        ctx.fillRect(b.x, b.y, BULLET_SIZE, BULLET_SIZE);
+      }
+    }
     // 树(遮挡层)
     for (let r = 0; r < GRID; r++) {
       for (let c = 0; c < GRID; c++) {
         if (this.grid[r][c] === TREE) this.drawTree(c * CELL, r * CELL);
       }
     }
-    // 爆炸
+    // 爆炸(Kenney 烟雾帧 → 兜底圆环)
     for (const e of this.explosions) {
       const pr = e.t / 0.32;
-      ctx.strokeStyle = `rgba(255,${200 - pr * 120},60,${1 - pr})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(e.x, e.y, 6 + pr * 22 * e.scale, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.fillStyle = `rgba(255,180,60,${0.5 * (1 - pr)})`;
-      ctx.beginPath();
-      ctx.arc(e.x, e.y, (6 + pr * 12) * e.scale, 0, Math.PI * 2);
-      ctx.fill();
+      const frame = Math.min(5, Math.floor(pr * 6));
+      const smoke = sprite(`smoke${frame}`);
+      if (smoke) {
+        const sz = (26 + pr * 26) * e.scale;
+        ctx.globalAlpha = 1 - pr;
+        ctx.drawImage(smoke, e.x - sz / 2, e.y - sz / 2, sz, sz);
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.strokeStyle = `rgba(255,${200 - pr * 120},60,${1 - pr})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, 6 + pr * 22 * e.scale, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = `rgba(255,180,60,${0.5 * (1 - pr)})`;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, (6 + pr * 12) * e.scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
   }
 
@@ -626,33 +684,44 @@ export class TankCore {
     const cx = box.x + box.w / 2;
     const cy = box.y + box.h / 2;
     const ang = { up: 0, right: Math.PI / 2, down: Math.PI, left: -Math.PI / 2 }[t.dir];
+    const cname = tankColorName(t);
+    const body = sprite(`body_${cname}`);
+    const barrel = sprite(`barrel_${cname}`);
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(ang);
-    const s = TANK_SIZE;
-    const track = Math.floor(t.anim) % 2;
-    // 履带
-    ctx.fillStyle = '#2c2f40';
-    ctx.fillRect(-s / 2, -s / 2, 6, s);
-    ctx.fillRect(s / 2 - 6, -s / 2, 6, s);
-    ctx.fillStyle = '#4a4e66';
-    for (let i = 0; i < 4; i++) {
-      const yy = -s / 2 + i * (s / 4) + (track ? 2 : 0);
-      ctx.fillRect(-s / 2, yy, 6, 3);
-      ctx.fillRect(s / 2 - 6, yy, 6, 3);
-    }
-    // 车身
-    ctx.fillStyle = t.color;
-    ctx.fillRect(-s / 2 + 7, -s / 2 + 3, s - 14, s - 6);
-    // 炮塔 + 炮管
-    ctx.fillStyle = '#1d2030';
-    ctx.fillRect(-4, -4, 8, 8);
-    ctx.fillRect(-2, -s / 2 - 4, 4, s / 2);
-    // 重甲坦克标记
-    if (t.kind === 'enemy' && t.hp >= 2) {
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(-s / 2 + 7, -s / 2 + 3, s - 14, s - 6);
+    if (body) {
+      // Kenney 车身 75×70、炮管 16×50(指向上)。整体缩放到约 TANK_SIZE。
+      const bw = TANK_SIZE + 8;
+      const bh = bw * (70 / 75);
+      if (barrel) {
+        const pw = (bw * 16) / 75;
+        const ph = (bh * 50) / 70;
+        ctx.drawImage(barrel, -pw / 2, -ph * 0.78, pw, ph);
+      }
+      ctx.drawImage(body, -bw / 2, -bh / 2, bw, bh);
+      if (t.kind === 'enemy' && t.hp >= 2) {
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.fillRect(-3, -3, 6, 6); // 重甲标记
+      }
+    } else {
+      // 兜底矢量绘制(精灵未加载时)
+      const s = TANK_SIZE;
+      const track = Math.floor(t.anim) % 2;
+      ctx.fillStyle = '#2c2f40';
+      ctx.fillRect(-s / 2, -s / 2, 6, s);
+      ctx.fillRect(s / 2 - 6, -s / 2, 6, s);
+      ctx.fillStyle = '#4a4e66';
+      for (let i = 0; i < 4; i++) {
+        const yy = -s / 2 + i * (s / 4) + (track ? 2 : 0);
+        ctx.fillRect(-s / 2, yy, 6, 3);
+        ctx.fillRect(s / 2 - 6, yy, 6, 3);
+      }
+      ctx.fillStyle = t.color;
+      ctx.fillRect(-s / 2 + 7, -s / 2 + 3, s - 14, s - 6);
+      ctx.fillStyle = '#1d2030';
+      ctx.fillRect(-4, -4, 8, 8);
+      ctx.fillRect(-2, -s / 2 - 4, 4, s / 2);
     }
     ctx.restore();
     // 护盾
@@ -662,7 +731,7 @@ export class TankCore {
         ctx.strokeStyle = 'rgba(120,200,255,0.9)';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(cx, cy, s / 2 + 4, 0, Math.PI * 2);
+        ctx.arc(cx, cy, TANK_SIZE / 2 + 4, 0, Math.PI * 2);
         ctx.stroke();
       }
     }

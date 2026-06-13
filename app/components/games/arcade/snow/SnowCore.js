@@ -3,6 +3,12 @@
 // 雪球兄弟 —— 平台跳跃+扔雪球(致敬经典玩法,自绘像素,零图片资产)
 // 敌人被雪球打满 3 发变成大雪球 → 推动滚雪球弹墙碾压全场!
 import { playSfx } from '@/lib/audio';
+import { pollGamepads } from '@/lib/gamepad';
+
+const GP_MAPS = [
+  { up: 'w', down: 's', left: 'a', right: 'd', a: 'j' },
+  { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', a: 'Enter' },
+];
 
 const GRID = 26;
 const CELL = 16;
@@ -61,6 +67,7 @@ export class SnowCore {
     this.players = opts.players || 1;
     this.onEvent = opts.onEvent || (() => {});
     this.keys = new Set();
+    this._gp = [new Set(), new Set()];
     this.running = false;
     this.paused = false;
     this.levelIndex = 0;
@@ -215,6 +222,7 @@ export class SnowCore {
 
   // ---------- 更新 ----------
   update(dt) {
+    pollGamepads(this.keys, this._gp, GP_MAPS.slice(0, this.players));
     for (const a of this.actors) {
       a.anim += dt * 8;
       if (a.kind === 'player') this.updatePlayer(a, dt);

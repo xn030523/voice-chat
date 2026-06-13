@@ -85,6 +85,7 @@ export default function ArcadeGameFrame({ title, desc, keys, extraHelp, trackId,
             </div>
           ))}
           {extraHelp && <Text size="xs" c="dimmed">{extraHelp}</Text>}
+          <Text size="xs" c="dimmed">🎮 已接手柄:手柄①→P1,手柄②→P2(方向键/摇杆 + A/B 键)</Text>
         </div>
         <div className="arcade-menu-actions">
           <Button leftSection={<Play size={15} />} onClick={() => startGame(1)}>

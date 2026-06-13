@@ -3,6 +3,12 @@
 // 功夫龟对决 —— 1v1 像素格斗(致敬经典对打玩法,自绘像素,零图片资产)
 // 拳快脚重,按住后退自动格挡;KO 或时间到血多者胜。
 import { playSfx } from '@/lib/audio';
+import { pollGamepads } from '@/lib/gamepad';
+
+const GP_MAPS = [
+  { left: 'a', right: 'd', up: 'w', a: 'j', b: 'k' },
+  { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', a: 'Enter', b: '0' },
+];
 
 export const VIEW_W = 480;
 export const VIEW_H = 280;
@@ -26,6 +32,7 @@ export class FightCore {
     this.players = opts.players || 1;
     this.onEvent = opts.onEvent || (() => {});
     this.keys = new Set();
+    this._gp = [new Set(), new Set()];
     this.running = false;
     this.paused = false;
     this.raf = null;
@@ -102,6 +109,7 @@ export class FightCore {
 
   update(dt) {
     if (this.over) return;
+    pollGamepads(this.keys, this._gp, GP_MAPS.slice(0, this.players));
     this.timer -= dt;
     if (Math.ceil(this.timer + dt) !== Math.ceil(this.timer)) this.emitHud();
     const [A, B] = this.fighters;

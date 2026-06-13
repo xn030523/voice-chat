@@ -3,6 +3,12 @@
 // 像素突击 —— 横版卷轴射击(致敬合金弹头/魂斗罗玩法,自绘像素,零图片资产)
 // 跑·跳·射,突破敌阵,干掉关底装甲堡垒!
 import { playSfx } from '@/lib/audio';
+import { pollGamepads } from '@/lib/gamepad';
+
+const GP_MAPS = [
+  { up: 'w', left: 'a', right: 'd', a: 'j' },
+  { up: 'ArrowUp', left: 'ArrowLeft', right: 'ArrowRight', a: 'Enter' },
+];
 
 const TILE = 16;
 export const VIEW_W = 480;
@@ -55,6 +61,7 @@ export class RunCore {
     this.players = opts.players || 1;
     this.onEvent = opts.onEvent || (() => {});
     this.keys = new Set();
+    this._gp = [new Set(), new Set()];
     this.running = false;
     this.paused = false;
     this.lives = [3, this.players === 2 ? 3 : 0];
@@ -208,6 +215,7 @@ export class RunCore {
   }
 
   update(dt) {
+    pollGamepads(this.keys, this._gp, GP_MAPS.slice(0, this.players));
     const alivePlayers = this.actors.filter((a) => a.kind === 'player');
     // 摄像机:跟随最前玩家
     if (alivePlayers.length) {

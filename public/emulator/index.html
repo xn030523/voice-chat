@@ -37,25 +37,40 @@
       }
       if (!core || !rom) { fail('缺少 core 或 rom 参数。'); return; }
 
-      // EmulatorJS 配置:单线程(threads off)→ 无需 SharedArrayBuffer / 跨域隔离头,
-      // 因此可安全嵌入普通 iframe,完全不影响主站语音/聊天。
-      window.EJS_player = '#game';
-      window.EJS_core = core;
-      window.EJS_gameUrl = rom;
-      window.EJS_gameName = name;
-      if (bios) window.EJS_biosUrl = bios;
-      window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
-      window.EJS_startOnLoaded = true;
-      window.EJS_threads = false;
-      window.EJS_askBeforeExit = false;
-      window.EJS_backgroundColor = '#0a0c14';
-      // 默认键位提示:方向键移动,X/Z 为 A/B 键(EmulatorJS 默认映射)
-      window.EJS_onGameStart = function () {};
+      var LOCAL = '/emulator/data/';
+      var CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
-      var s = document.createElement('script');
-      s.src = window.EJS_pathtodata + 'loader.js';
-      s.onerror = function () { fail('模拟器内核加载失败(CDN 不可达?)。'); };
-      document.body.appendChild(s);
+      function boot(dataPath) {
+        // EmulatorJS 配置:单线程(threads off)→ 无需 SharedArrayBuffer / 跨域隔离头,
+        // 因此可安全嵌入普通 iframe,完全不影响主站语音/聊天。
+        window.EJS_player = '#game';
+        window.EJS_core = core;
+        window.EJS_gameUrl = rom;
+        window.EJS_gameName = name;
+        if (bios) window.EJS_biosUrl = bios;
+        window.EJS_pathtodata = dataPath;
+        window.EJS_startOnLoaded = true;
+        window.EJS_threads = false;
+        window.EJS_askBeforeExit = false;
+        window.EJS_backgroundColor = '#0a0c14';
+
+        var s = document.createElement('script');
+        s.src = dataPath + 'loader.js';
+        s.onerror = function () {
+          if (dataPath !== CDN) {
+            // 本地内核缺失/损坏 → 回退 CDN
+            boot(CDN);
+          } else {
+            fail('模拟器内核加载失败(本地与 CDN 均不可达)。');
+          }
+        };
+        document.body.appendChild(s);
+      }
+
+      // 本地优先:探测自托管内核是否就位(version.json),否则用 CDN
+      fetch(LOCAL + 'version.json', { method: 'HEAD' })
+        .then(function (r) { boot(r.ok ? LOCAL : CDN); })
+        .catch(function () { boot(CDN); });
     })();
   </script>
 </body>

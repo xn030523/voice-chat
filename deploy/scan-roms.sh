@@ -66,7 +66,7 @@ order = {'免费开源': 0, 'FC': 1, 'SFC': 2, 'MD': 3, 'GB': 4, 'GBA': 5, 'SMS'
 games.sort(key=lambda g: (order.get(g['system'], 99), g['name']))
 
 json.dump({'_comment': '由 deploy/scan-roms.sh 自动生成:扫描 public/roms/ 下已存在的 ROM。任意文件名自动识别上架。',
-           'games': games}, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+           'scanned': True, 'games': games}, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
 print(f'✓ 已扫描 {len(games)} 个 ROM,写入 roms.json')
 by = {}
 for g in games:

@@ -31,6 +31,7 @@ export default function GamesPanel({ games }) {
   const [arcade, setArcade] = useState(null); // {type:'builtin',id} | {type:'emu',game}(不依赖游戏服)
   const [emuGames, setEmuGames] = useState([]); // 经典模拟器清单(public/roms/roms.json)
   const [emuPresent, setEmuPresent] = useState(() => new Set()); // 已放入卡带(ROM 文件存在)的 id
+  const [emuAllPresent, setEmuAllPresent] = useState(false); // 自动扫描清单:全部已存在,免逐个探测
 
   // 拉取模拟器 ROM 清单(失败/为空则不显示该区,不影响其他功能)
   useEffect(() => {
@@ -41,7 +42,12 @@ export default function GamesPanel({ games }) {
         if (!alive || !d || !Array.isArray(d.games)) return;
         const list = d.games.filter((g) => g && g.id && g.core && g.file);
         setEmuGames(list);
-        // 探测每个卡带槽是否已放入 ROM(HEAD,同源静态,很快)
+        if (d.scanned) {
+          // 自动扫描出的清单 = 文件都在,直接全标可玩,避免成百上千次 HEAD 探测
+          setEmuAllPresent(true);
+          return;
+        }
+        // 手工维护的目录:逐个探测卡带是否就位(条目少,开销可控)
         list.forEach((g) => {
           fetch(`/roms/${g.file}`, { method: 'HEAD' })
             .then((res) => {
@@ -106,7 +112,7 @@ export default function GamesPanel({ games }) {
   } else if (activeTable) {
     body = <TableView games={games} />;
   } else {
-    body = <Lobby games={games} emuGames={emuGames} emuPresent={emuPresent} onArcade={setArcade} />;
+    body = <Lobby games={games} emuGames={emuGames} emuPresent={emuPresent} emuAllPresent={emuAllPresent} onArcade={setArcade} />;
   }
 
   return (

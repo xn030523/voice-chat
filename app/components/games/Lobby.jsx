@@ -1,15 +1,21 @@
 'use client';
 
 // 大厅:联机牌桌 + 街机厅 + 回归座位横幅
-import { Badge, Button, Text, ScrollArea } from '@mantine/core';
-import { Eye, Plus, Undo2, Gamepad2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Badge, Button, Text, ScrollArea, TextInput } from '@mantine/core';
+import { Eye, Plus, Undo2, Gamepad2, Search } from 'lucide-react';
 import { ARCADE_GAMES } from './arcade/ArcadeShell';
 
 const PHASE_LABEL = { waiting: '等待中', playing: '进行中', ended: '已结束' };
 const PHASE_COLOR = { waiting: 'teal', playing: 'indigo', ended: 'gray' };
 
-export default function Lobby({ games, emuGames = [], emuPresent = new Set(), onArcade }) {
+export default function Lobby({ games, emuGames = [], emuPresent = new Set(), emuAllPresent = false, onArcade }) {
   const { games: metas, tables, reclaimable, createTable, joinTable, spectateTable } = games;
+  const [emuQuery, setEmuQuery] = useState('');
+  const filteredEmu = useMemo(() => {
+    const q = emuQuery.trim().toLowerCase();
+    return q ? emuGames.filter((g) => (g.name || '').toLowerCase().includes(q)) : emuGames;
+  }, [emuGames, emuQuery]);
 
   return (
     <div className="games-body">
@@ -96,19 +102,29 @@ export default function Lobby({ games, emuGames = [], emuPresent = new Set(), on
                 <span className="game-pick-seats">用你自己的卡带</span>
               </button>
             </div>
+            {emuGames.length > 12 && (
+              <TextInput
+                size="xs"
+                mb={8}
+                placeholder={`搜索 ${emuGames.length} 个游戏…`}
+                value={emuQuery}
+                onChange={(e) => setEmuQuery(e.currentTarget.value)}
+                leftSection={<Search size={13} />}
+              />
+            )}
             {Object.entries(
-              emuGames.reduce((acc, g) => {
+              filteredEmu.reduce((acc, g) => {
                 (acc[g.system || g.core] ||= []).push(g);
                 return acc;
               }, {})
             ).map(([sys, list]) => (
               <div key={sys} className="emu-sys-group">
                 <Text size="xs" c="dimmed" mb={4} className="emu-sys-label">
-                  {sys}
+                  {sys} · {list.length}
                 </Text>
                 <div className="game-pick-grid">
                   {list.map((g) => {
-                    const ready = emuPresent.has(g.id);
+                    const ready = emuAllPresent || emuPresent.has(g.id);
                     return (
                       <button
                         key={g.id}
@@ -131,6 +147,11 @@ export default function Lobby({ games, emuGames = [], emuPresent = new Set(), on
                 </div>
               </div>
             ))}
+            {filteredEmu.length === 0 && (
+              <Text size="sm" c="dimmed" ta="center" py={12}>
+                没有匹配「{emuQuery}」的游戏
+              </Text>
+            )}
           </div>
         )}
 

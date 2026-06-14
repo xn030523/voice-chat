@@ -6,17 +6,18 @@
 
 ## 怎么让一个游戏变「可玩」
 
-1. 在大厅点该游戏,会显示它需要的**确切文件名**(也可直接查 `roms.json` 的 `file` 字段)
-2. 把 ROM 文件按该名字放进 **本目录**(服务器上是 `/var/www/voice-chat/public/roms/`)
-   - 例:坦克大战 → `battlecity.nes`;合金弹头 → `mslug.zip`(街机还需 BIOS `neogeo.zip`)
-3. 刷新页面,该游戏即变「可玩」
+**最省事:上传你自己的 ROM,自动上架(任意文件名,中文也行)**
 
-> 文件已放在本地仓库目录时,执行部署(`install-webapp.sh` 的 rsync)会同步到服务器。
-> ROM 二进制在 `.gitignore` 中排除,**不会进 GitHub**,只同步到你自己的服务器。
+1. 把你的 ROM 文件(`.nes`/`.sfc`/`.md`/`.gba`/`.zip` 等)上传到服务器的
+   `/var/www/voice-chat/public/roms/` 目录(用面板/SFTP/scp 都行,文件名随意)
+2. 等约 1 分钟(服务器每分钟自动扫描编目),或手动跑一次:
+   `bash deploy/scan-roms.sh /var/www/voice-chat/public/roms`
+3. 刷新页面 → 大厅「经典模拟器」就会按平台列出你上传的全部游戏,**均可玩**
 
-## 加目录里没有的游戏
+> 无需改文件名、无需手动登记 —— `scan-roms.sh` 按扩展名自动识别平台(FC/SFC/MD/GBA/街机…)
+> 并以文件名作为显示名。部署更新**不会删除**你上传的 ROM(`public/roms` 由你独占管理)。
 
-编辑 `roms.json` 的 `games` 数组,加一项:
+**手动登记(可选):** 也可直接编辑 `roms.json` 的 `games` 数组自定义显示名/分组:
 
 ```json
 { "id": "唯一英文id", "name": "显示名", "core": "nes", "file": "文件名.nes", "system": "FC", "players": "1-2P" }

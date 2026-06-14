@@ -29,11 +29,26 @@ chmod 600 "$ENV_FILE"
 
 echo "=== 2/5 同步代码到 $DEST_DIR ==="
 mkdir -p "$DEST_DIR"
-# 注意:games-server/engines 是前端同构依赖(webpack 打包),必须保留;只排除其依赖目录
+# 注意:games-server/engines 是前端同构依赖(webpack 打包),必须保留;只排除其依赖目录。
+# 关键:排除 public/roms —— 该目录由用户管理(上传自己的 ROM),部署绝不删除/覆盖它。
 rsync -a --delete \
   --exclude node_modules --exclude .next --exclude .git \
   --exclude games-server/node_modules \
+  --exclude /public/roms/ \
   "$SRC_DIR/" "$DEST_DIR/"
+
+echo "=== 2.5/5 整理 ROM 目录(用户自管,自动编目)==="
+ROMS_DIR="$DEST_DIR/public/roms"
+mkdir -p "$ROMS_DIR"
+# 首次/缺失时补齐文档与开源示例游戏(不覆盖用户已有文件)
+cp -n "$SRC_DIR/public/roms/README.md" "$ROMS_DIR/" 2>/dev/null || true
+cp -n "$SRC_DIR/public/roms/CREDITS.md" "$ROMS_DIR/" 2>/dev/null || true
+[ -f "$SRC_DIR/public/roms/nova.nes" ] && cp -n "$SRC_DIR/public/roms/nova.nes" "$ROMS_DIR/" 2>/dev/null || true
+# 扫描目录里所有 ROM(任意文件名)→ 生成 roms.json
+bash "$SCRIPT_DIR/scan-roms.sh" "$ROMS_DIR" || true
+# 安装定时自动扫描:用户上传 ROM 后约 1 分钟内自动上架(无需手动跑命令)
+CRON_LINE="* * * * * bash $SCRIPT_DIR/scan-roms.sh $ROMS_DIR >/dev/null 2>&1"
+( crontab -l 2>/dev/null | grep -v 'scan-roms.sh'; echo "$CRON_LINE" ) | crontab - 2>/dev/null || true
 
 echo "=== 3/5 安装依赖 + 构建(npm ci && next build) ==="
 cd "$DEST_DIR"

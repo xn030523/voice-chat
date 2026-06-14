@@ -1,29 +1,13 @@
 {
-  "_comment": "经典游戏目录(卡带槽)。把对应 ROM 文件放进本目录,游戏即从『待投放』变『可玩』。详见 README.md。条目仅为标签,不含任何游戏内容。",
+  "_comment": "由 deploy/scan-roms.sh 自动生成:扫描 public/roms/ 下已存在的 ROM。任意文件名自动识别上架。",
   "games": [
-    { "id": "nova", "name": "松鼠诺娃(开源)", "core": "nes", "file": "nova.nes", "system": "免费开源", "players": "1P" },
-    { "id": "battlecity", "name": "坦克大战", "core": "nes", "file": "battlecity.nes", "system": "FC", "players": "1-2P" },
-    { "id": "contra", "name": "魂斗罗", "core": "nes", "file": "contra.nes", "system": "FC", "players": "1-2P" },
-    { "id": "superc", "name": "超级魂斗罗", "core": "nes", "file": "superc.nes", "system": "FC", "players": "1-2P" },
-    { "id": "smb", "name": "超级马里奥", "core": "nes", "file": "smb.nes", "system": "FC", "players": "1P" },
-    { "id": "smb3", "name": "超级马里奥3", "core": "nes", "file": "smb3.nes", "system": "FC", "players": "1P" },
-    { "id": "tmnt", "name": "忍者神龟", "core": "nes", "file": "tmnt.nes", "system": "FC", "players": "1-2P" },
-    { "id": "doubledragon", "name": "双截龙", "core": "nes", "file": "doubledragon.nes", "system": "FC", "players": "1-2P" },
-    { "id": "chipdale", "name": "松鼠大作战", "core": "nes", "file": "chipdale.nes", "system": "FC", "players": "1-2P" },
-    { "id": "ducktales", "name": "唐老鸭历险记", "core": "nes", "file": "ducktales.nes", "system": "FC", "players": "1P" },
-    { "id": "megaman", "name": "洛克人", "core": "nes", "file": "megaman.nes", "system": "FC", "players": "1P" },
-    { "id": "gradius", "name": "宇宙巡航机", "core": "nes", "file": "gradius.nes", "system": "FC", "players": "1P" },
-    { "id": "adventureisland", "name": "冒险岛", "core": "nes", "file": "adventureisland.nes", "system": "FC", "players": "1P" },
-    { "id": "smw", "name": "超级马里奥世界", "core": "snes", "file": "smw.sfc", "system": "SFC", "players": "1P" },
-    { "id": "contra3", "name": "魂斗罗3", "core": "snes", "file": "contra3.sfc", "system": "SFC", "players": "1-2P" },
-    { "id": "sf2", "name": "街头霸王2", "core": "snes", "file": "sf2.sfc", "system": "SFC", "players": "1-2P" },
-    { "id": "sonic", "name": "索尼克", "core": "segaMD", "file": "sonic.md", "system": "MD", "players": "1P" },
-    { "id": "sor2", "name": "怒之铁拳2", "core": "segaMD", "file": "sor2.md", "system": "MD", "players": "1-2P" },
-    { "id": "mslug", "name": "合金弹头", "core": "arcade", "file": "mslug.zip", "system": "街机", "players": "1-2P", "bios": "neogeo.zip" },
-    { "id": "snowbros", "name": "雪人兄弟", "core": "arcade", "file": "snowbros.zip", "system": "街机", "players": "1-2P" },
-    { "id": "captcomm", "name": "名将", "core": "arcade", "file": "captcomm.zip", "system": "街机", "players": "1-4P" },
-    { "id": "dino", "name": "恐龙快打", "core": "arcade", "file": "dino.zip", "system": "街机", "players": "1-3P" },
-    { "id": "knights", "name": "圆桌骑士", "core": "arcade", "file": "knights.zip", "system": "街机", "players": "1-3P" },
-    { "id": "1943", "name": "1943", "core": "arcade", "file": "1943.zip", "system": "街机", "players": "1-2P" }
+    {
+      "id": "nova",
+      "name": "松鼠诺娃(开源)",
+      "core": "nes",
+      "file": "nova.nes",
+      "system": "免费开源",
+      "players": ""
+    }
   ]
 }

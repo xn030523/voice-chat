@@ -30,11 +30,7 @@ export default function MemberList({ roster, activeSharerId, connectedCount = 0,
         <Stack gap={6} p="xs">
           {roster.map((m) => (
             <Group key={m.id} className={`member-row${m.self ? ' me' : ''}`} gap={10} wrap="nowrap">
-              <Avatar
-                radius="xl"
-                size={34}
-                color={m.self ? 'indigo' : m.muted ? 'gray' : 'indigo'}
-              >
+              <Avatar radius="xl" size={32} color="gray">
                 {(m.name || '?').charAt(0).toUpperCase()}
               </Avatar>
               <Text className="member-name" size="sm" fw={500} truncate>

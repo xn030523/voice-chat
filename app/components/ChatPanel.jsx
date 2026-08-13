@@ -175,7 +175,7 @@ export default function ChatPanel({ messages, onSend, onSendImage, disabled }) {
         <TextInput
           flex={1}
           ref={inputRef}
-          placeholder={disabled ? '连接中…' : '输入消息 / 粘贴图片 / 拖入图片…'}
+          placeholder={disabled ? '连接中…' : '说点什么…'}
           value={text}
           onChange={(e) => setText(e.currentTarget.value)}
           onPaste={onPaste}

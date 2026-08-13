@@ -3,12 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node server.js",
-    "dev:games": "node games-server/index.js",
-    "test:games": "node --test games-server/engines/*.test.js",
+    "dev": "next dev",
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
     "build": "next build",
-    "start": "cross-env NODE_ENV=production node server.js"
+    "start": "next start"
   },
   "dependencies": {
     "@mantine/core": "^7.17.8",
@@ -19,8 +17,5 @@
     "next": "^14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
-    "cross-env": "^7.0.3"
   }
 }
